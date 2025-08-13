@@ -1,0 +1,24 @@
+<link rel="stylesheet" href="./style.css">
+<script src="./index.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"
+        integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<div class="chat-widget">
+    <button id="chat-toggle">💬 Chat</button>
+
+    <div class="chat-box hidden">
+        <div class="chat-header">
+            <span>Live Support</span>
+            <button id="close-chat">✖</button>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="chat-message bot">Hi there! How can I help you today? 😊</div>
+        </div>
+
+        <div class="chat-input">
+            <input type="text" id="chat-input" placeholder="Type a message..." />
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+</div>
