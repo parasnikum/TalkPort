@@ -2,32 +2,322 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot Settings</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"
+        integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #1e272e;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            font-size: 22px;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 1px solid #485460;
+            padding-bottom: 10px;
+        }
+
+        .sidebar a {
+            color: #dcdde1;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 6px 0;
+            display: flex;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .sidebar a:hover {
+            background: #485460;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .header {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .chat-list a {
+            display: block;
+            padding: 15px;
+            background-color: #ecf0f1;
+            margin: 12px 0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #2f3542;
+            position: relative;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+
+        .chat-list a:hover {
+            background-color: #dcdde1;
+        }
+
+        .chat-meta {
+            font-size: 14px;
+            color: #555;
+            margin-top: 8px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff4757;
+            color: white;
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 50%;
+            display: none;
+        }
+
+        .notification-badge.show {
+            display: inline-block;
+        }
+
+        .highlight {
+            background-color: #ffeaa7 !important;
+            border-left: 4px solid #ff4757;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                padding: 15px;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .sidebar h2 {
+                font-size: 22px;
+                margin-bottom: 20px;
+            }
+
+            .sidebar a {
+                font-size: 14px;
+                margin: 10px 0;
+            }
+        }
+
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2f3542;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="file"] {
+            padding: 10px 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="file"]:focus {
+            border-color: #1e90ff;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-group label {
+            font-weight: normal;
+            font-size: 15px;
+            color: #2f3542;
+        }
+
+        #saveBtn {
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #saveBtn:hover:not(:disabled) {
+            background-color: #0c7cd5;
+        }
+
+        #saveBtn:disabled {
+            background-color: #8ab2f2;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 
 <body>
-    <legend>Bot Name: </legend>
-    <input type="text" name="bot_name" placeholder="Bot Name">
+    <div class="sidebar">
+        <h2>Admin Panel</h2>
+        <a href="/admin">🏠 Home</a>
+        <a href="/admin/chats">💬 Chats</a>
+        <a href="/admin/analytics">📊 Analytics</a>
+        <a href="/admin/settings/bots">⚙️ Settings</a>
+        <a href="#">🚪 Logout</a>
+    </div>
 
 
+    <div class="main-content">
+        <div class="main-content">
+            <div class="header">Bot Configuration</div>
 
+            <div class="card">
+                <form id="botConfigForm">
+                    <div class="form-group">
+                        <label for="bot_name">🤖 Bot Name</label>
+                        <input type="text" id="bot_name" name="bot_name" placeholder="Enter bot name"
+                            value="<%= payload.bot_name %>" />
+                    </div>
 
-    <legend>Bot Logo: </legend>
-    <input type="text" name="bot_logo" placeholder="Bot logo">
-    <input type="file" name="botLogoFile" placeholder="Bot logo">
+                    <div class="form-group">
+                        <label for="bot_logo">🖼️ Bot Logo (URL)</label>
+                        <input type="text" id="bot_logo" name="bot_logo" placeholder="Enter bot logo URL"
+                            value="<%= payload.bot_logo %>" />
+                    </div>
 
+                    <div class="form-group">
+                        <label for="botLogoFile">Upload Logo</label>
+                        <input type="file" id="botLogoFile" name="botLogoFile" />
+                    </div>
 
-    <legend>Auto Greeting Message: </legend>
-    <input type="text" name="greeting_message">
+                    <div class="form-group">
+                        <label for="greeting_message">💬 Auto Greeting Message</label>
+                        <input type="text" id="greeting_message" name="greeting_message"
+                            placeholder="Hello! How can I help you?" value="<%= payload.greeting_message %>" />
+                    </div>
 
-    <legend>Status:</legend>
-    <input type="radio" name="bot_status" value="Enable">
-    <input type="radio" name="bot_status" value="Disable">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="bot_status" value="Enable" <%=payload.bot_status=="Enable"
+                                    ? "checked" : "" %> /> Enable</label>
+                            <label><input type="radio" name="bot_status" value="Disable"
+                                    <%=payload.bot_status=="Disable" ? "checked" : "" %> /> Disable</label>
+                        </div>
+                    </div>
 
-    <legend>Whitelisted Domain: </legend>
-    <input type="text" name="whitelist_domain" placeholder="Eg. zyroxhosting.in , facebook.com">
+                    <div class="form-group">
+                        <label for="whitelist_domain">🌐 Whitelisted Domain(s)</label>
+                        <input type="text" id="whitelist_domain" name="whitelist_domain"
+                            placeholder="e.g., zyroxhosting.in, facebook.com" value="<%= payload.whitelist_domain %>" />
+                    </div>
+
+                    <!-- Save Changes button initially disabled -->
+                    <button type="submit" id="saveBtn" disabled>Save Changes</button>
+                </form>
+
+                <script>
+                    const form = document.getElementById('botConfigForm');
+                    const saveBtn = document.getElementById('saveBtn');
+
+                    // Capture initial values of all inputs except file inputs
+                    const initialValues = {};
+
+                    [...form.elements].forEach(el => {
+                        if (el.type === 'radio') {
+                            if (el.checked) initialValues[el.name] = el.value;
+                            else if (!(el.name in initialValues)) initialValues[el.name] = null;
+                        } else if (el.type !== 'file' && el.name) {
+                            initialValues[el.name] = el.value;
+                        }
+                    });
+
+                    function isFormChanged() {
+                        for (let el of form.elements) {
+                            if (!el.name) continue;
+
+                            if (el.type === 'file') {
+                                // If file input has any files selected, consider changed
+                                if (el.files.length > 0) return true;
+                            } else if (el.type === 'radio') {
+                                if (el.checked && initialValues[el.name] !== el.value) return true;
+                            } else {
+                                if (initialValues[el.name] !== el.value) return true;
+                            }
+                        }
+                        return false;
+                    }
+
+                    form.addEventListener('input', () => {
+                        saveBtn.disabled = !isFormChanged();
+                    });
+
+                    // Optional: after submit disable button again
+                    form.addEventListener('submit', () => {
+                        saveBtn.disabled = true;
+                    });
+                </script>
+
+            </div>
+        </div>
+    </div>
+    <audio type="audio/mp3" loop src="../../Sounds/Cell Phone Ringing - Sound Effect.mp3"
+        id="notification_call"></audio>
+    <audio type="audio/mp3" src="../../Sounds/new-incoming-message.mp3" id="notification_message"></audio>
+
 </body>
 
 </html>

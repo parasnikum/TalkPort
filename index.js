@@ -4,7 +4,7 @@ const app = express();
 const http = require("http").Server(app);
 const io = require('socket.io')(http, {
     cors: {
-        origin: "http://127.0.0.1:5500",  // allow your frontend origin here
+        origin: "*",  // allow your frontend origin here
         methods: ["GET", "POST"]
     }
 });
@@ -15,7 +15,8 @@ const { newChat, newAgentChat, fetchAllChat } = require("./controllers/chat.cont
 const chatSchema = require("./models/chatSchema");
 const path = require("path");
 const adminRoutes = require("./routes/admin.routes")
-const cors = require("cors")
+const cors = require("cors");
+const botSchema = require("./models/botSchema");
 
 
 let socketData = new Object();
@@ -23,18 +24,22 @@ let socketData = new Object();
 
 db.connect();
 app.use(cors({
-  origin: "http://127.0.0.1:5500", // or specific domains like ["https://client.com"]
-  credentials: true
+    origin: "*", // or specific domains like ["https://client.com"]
+    credentials: true
 }));
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "/views"));
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
+
 
 app.use(cookieParser());
 app.use("/admin", adminRoutes)
 app.use(express.static('public'));
 
 app.get("/", async (req, res) => {
-    
+
     // Always generate a new ID only if no cookie exists
     // console.log("check kookie",JSON.parse(req.cookies.id).user);
     const now = Date.now();
@@ -81,45 +86,50 @@ app.get("/", async (req, res) => {
 });
 
 
+app.get("/:widgetid/widget.js", async (req, res) => {
+    const { widgetid } = req.params;
+    const isWidgetFound = await botSchema.findOne({ uniqueBotId: widgetid });
+    console.log(isWidgetFound);
 
-
-app.get("/widget.js", async (req, res) => {
-  const widgetLoaderPath = path.join(__dirname, "views", "widget.js");
-  res.set("Content-Type", "application/javascript");
-
-  const now = Date.now();
-  let cookie = null;
-
-  try {
-    if (req.cookies?.id) {
-      cookie = JSON.parse(req.cookies.id);
+    if (!isWidgetFound) {
+        return res.send("widget id is wrong")
     }
-  } catch (e) {
-    cookie = null;
-  }
+    const widgetLoaderPath = path.join(__dirname, "views", "widget.js");
+    res.set("Content-Type", "application/javascript");
 
-  let id = cookie?.user || null;
+    const now = Date.now();
+    let cookie = null;
 
-  // Always reset cookie if it's missing or expired
-  const shouldReset = !cookie || (cookie.time + 1000 * 60 * 30 < now);
-  if (shouldReset) {
-    id = await nanoid(90);
-  }
+    try {
+        if (req.cookies?.id) {
+            cookie = JSON.parse(req.cookies.id);
+        }
+    } catch (e) {
+        cookie = null;
+    }
 
-  const newCookie = {
-    user: id,
-    time: now,
-    theDomain: req.hostname,
-  };
+    let id = cookie?.user || null;
 
-  // ✅ Always set with SameSite=None and Secure for cross-domain usage
-  res.cookie("id", JSON.stringify(newCookie), {
-    maxAge: 120 * 24 * 60 * 60 * 1000, // 120 days
-    sameSite: 'None',
-    secure: false,
-  });
+    // Always reset cookie if it's missing or expired
+    const shouldReset = !cookie || (cookie.time + 1000 * 60 * 30 < now);
+    if (shouldReset) {
+        id = await nanoid(90);
+    }
 
-  res.sendFile(widgetLoaderPath);
+    const newCookie = {
+        user: id,
+        time: now,
+        theDomain: req.hostname,
+    };
+
+    // ✅ Always set with SameSite=None and Secure for cross-domain usage
+    res.cookie("id", JSON.stringify(newCookie), {
+        maxAge: 120 * 24 * 60 * 60 * 1000, // 120 days
+        sameSite: 'None',
+        secure: false,
+    });
+
+    res.sendFile(widgetLoaderPath);
 });
 
 
@@ -190,20 +200,6 @@ io.on("connection", (socket) => {
 
     // console.log("Socket ID:", socket.id);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -215,7 +215,7 @@
 
     body {
       display: flex;
-      height: 100vh;
+      min-height: 100vh;
       background-color: #f0f2f5;
       color: #333;
     }
@@ -254,17 +254,15 @@
 
     .main-content {
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
+      padding: 30px;
+      overflow-y: auto;
     }
 
     .header {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 600;
       margin-bottom: 20px;
     }
-
     .message-container {
       flex: 1;
       background: white;
@@ -354,39 +352,56 @@
     }
   </style>
 </head>
-
 <body>
   <div class="sidebar">
     <h2>Admin Panel</h2>
-    <a href="#">🏠 Home</a>
-    <a href="/admin">💬 Chats</a>
-    <a href="#">📊 Analytics</a>
-    <a href="#">⚙️ Settings</a>
+    <a href="/admin">🏠 Home</a>
+    <a href="/admin/chats">💬 Chats</a>
+    <a href="/admin/analytics">📊 Analytics</a>
+    <a href="/admin/settings/bots">⚙️ Settings</a>
     <a href="#">🚪 Logout</a>
   </div>
 
   <div class="main-content">
     <div class="header">Messages</div>
-    From: <span id="sender-id">
-      <%= senderId %>
-    </span>
+    From: <span id="sender-id"><%= senderId %></span>
 
     <div class="message-container">
+      <% 
+        let lastDate = null;
+        function formatDateHeader(timestamp) {
+          const date = new Date(timestamp);
+          const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(today.getDate() - 1);
 
-      <% if (messages && messages.length> 0) { %>
-        <% messages.forEach(msg=> { %>
-          <div class="message <%= msg.senderId === 'Agent' ? 'sent' : 'received' %>">
-            <div>
-              <%= msg.msgContent %>
+          if (date.toDateString() === today.toDateString()) return "Today";
+          if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+
+          return date.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          });
+        }
+
+        if (messages && messages.length > 0) {
+          messages.forEach(msg => {
+            const msgDate = new Date(msg.timestamp).toDateString();
+            if (msgDate !== lastDate) {
+      %>
+              <div class="date-separator"><%= formatDateHeader(msg.timestamp) %></div>
+      <%     lastDate = msgDate;
+            } 
+      %>
+            <div class="message <%= msg.senderId === 'Agent' ? 'sent' : 'received' %>">
+              <div><%= msg.msgContent %></div>
+              <div class="meta"><%= new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %></div>
             </div>
-            <div class="meta">
-              <%= new Date(msg.timestamp).toLocaleString() %>
-            </div>
-          </div>
-          <% }) %>
-            <% } else { %>
-              <p>No messages found.</p>
-              <% } %>
+      <%   });
+        } else { %>
+          <p>No messages found.</p>
+      <% } %>
     </div>
 
     <div class="input-area">
@@ -394,7 +409,101 @@
       <input id="agent-message-send" type="button" value="Send" />
     </div>
   </div>
+
   <audio type="audio/mp3" src="../../Sounds/new-incoming-message.mp3" id="notification_message"></audio>
+
+  <style>
+    .date-separator {
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      margin: 16px 0;
+      position: relative;
+    }
+
+    .date-separator::before,
+    .date-separator::after {
+      content: "";
+      display: inline-block;
+      width: 40%;
+      height: 1px;
+      background: #ddd;
+      vertical-align: middle;
+      margin: 0 8px;
+    }
+
+    .message-container {
+      flex: 1;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      overflow-y: auto;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 12px 16px;
+      margin: 6px 0;
+      border-radius: 12px;
+      line-height: 1.4;
+      position: relative;
+      font-size: 15px;
+    }
+
+    .sent {
+      background-color: #dafadf;
+      align-self: flex-end;
+      border-bottom-right-radius: 0;
+    }
+
+    .received {
+      background-color: #f1f0f0;
+      align-self: flex-start;
+      border-bottom-left-radius: 0;
+    }
+
+    .meta {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #message-input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+      font-size: 14px;
+    }
+
+    #agent-message-send {
+      padding: 12px 20px;
+      background-color: #2ed573;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #agent-message-send:hover {
+      background-color: #1eae5c;
+    }
+  </style>
+
   <script>
     const socket = io();
     const sendBtn = document.getElementById("agent-message-send");
@@ -403,28 +512,14 @@
     const messages = document.querySelector('.message-container');
     const notification = document.getElementById("notification_message");
 
-
-
-    let isFocus = document.hasFocus(); // initial state
+    let isFocus = document.hasFocus();
     let userInteracted = false;
+    let lastRenderedDate = null;
 
-    // Track focus state
-    window.addEventListener("focus", () => {
-      isFocus = true;
-      console.log("Tab is focused");
-
-    });
-
-    window.addEventListener("blur", () => {
-      isFocus = false;
-      console.log("Tab lost focus");
-    });
-
-    // Track user interaction to allow audio playback
+    window.addEventListener("focus", () => isFocus = true);
+    window.addEventListener("blur", () => isFocus = false);
     ["click", "keydown", "touchstart"].forEach(event => {
-      window.addEventListener(event, () => {
-        userInteracted = true;
-      }, { once: true });
+      window.addEventListener(event, () => userInteracted = true, { once: true });
     });
 
     socket.on('connect', () => {
@@ -433,63 +528,87 @@
 
     socket.emit("admin-join-newroom", senderID);
 
+    function formatDateHeader(timestamp) {
+      const date = new Date(timestamp);
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(today.getDate() - 1);
 
+      if (date.toDateString() === today.toDateString()) return "New Message";
+      if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
 
+      return date.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
 
-    socket.on("update-newchat", (newmsg) => {
-      if (!newmsg || !newmsg.msg || !newmsg.timestamp) return; // Basic validation for new message data
-      const userMsg = document.createElement('div');
-      userMsg.classList.add('message', 'received');
-      
-      const messageContent = `
-    <div>${newmsg.msg}</div>
-    <div class="meta">${new Date(newmsg.timestamp).toLocaleString()}</div>
-  `;
-      userMsg.innerHTML = messageContent;
-
-      messages.appendChild(userMsg);
-
-      // Scroll to the bottom of the messages container
-      messages.scrollTop = messages.scrollHeight;
-
-      // Play notification sound if the page isn't focused and the user has interacted
-      if (!isFocus && userInteracted) {
-        notification.play().catch((error) => {
-          console.error("Playback failed:", error);
-        });
-      }
-    });
-
-
-    function sendMessage() {
-      if (msgInput.value.trim().length > 0) {
-        socket.emit("agent-message", {
-          msg: msgInput.value,
-          uuid: senderID,
-          chatID: "<%= chatID %>"
-        });
-
-        const agentReply = document.createElement('div');
-        agentReply.className = 'message sent';
-        agentReply.innerHTML = `
-        <div>${msgInput.value}</div>
-        <div class="meta">${new Date().toLocaleString()}</div>`;
-        messages.appendChild(agentReply);
-        messages.scrollTop = messages.scrollHeight;
-        msgInput.value = "";
+    function appendDateSeparatorIfNeeded(timestamp) {
+      const dateStr = new Date(timestamp).toDateString();
+      if (dateStr !== lastRenderedDate) {
+        const dateSeparator = document.createElement("div");
+        dateSeparator.className = "date-separator";
+        dateSeparator.textContent = formatDateHeader(timestamp);
+        messages.appendChild(dateSeparator);
+        lastRenderedDate = dateStr;
       }
     }
 
-    sendBtn.addEventListener("click", sendMessage);
+    socket.on("update-newchat", (newmsg) => {
+      if (!newmsg || !newmsg.msg || !newmsg.timestamp) return;
 
-    // Send on Enter key
+      appendDateSeparatorIfNeeded(newmsg.timestamp);
+
+      const userMsg = document.createElement("div");
+      userMsg.classList.add("message", "received");
+      userMsg.innerHTML = `
+        <div>${newmsg.msg}</div>
+        <div class="meta">${new Date(newmsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+      `;
+      messages.appendChild(userMsg);
+      messages.scrollTop = messages.scrollHeight;
+
+      if (!isFocus && userInteracted) {
+        notification.play().catch(err => console.error("Audio play failed:", err));
+      }
+    });
+
+    function sendMessage() {
+      const content = msgInput.value.trim();
+      if (content.length === 0) return;
+
+      const now = new Date();
+      socket.emit("agent-message", {
+        msg: content,
+        uuid: senderID,
+        chatID: "<%= chatID %>",
+        timestamp: now.toISOString()
+      });
+
+      appendDateSeparatorIfNeeded(now);
+
+      const agentReply = document.createElement("div");
+      agentReply.classList.add("message", "sent");
+      agentReply.innerHTML = `
+        <div>${content}</div>
+        <div class="meta">${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+      `;
+      messages.appendChild(agentReply);
+      messages.scrollTop = messages.scrollHeight;
+      msgInput.value = "";
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
     msgInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
-        e.preventDefault(); // Prevent newline if form
+        e.preventDefault();
         sendMessage();
       }
     });
   </script>
 </body>
+
+
 
 </html>

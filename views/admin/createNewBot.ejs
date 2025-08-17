@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"
+        integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+    <style>
+        * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: #1e272e;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      font-size: 22px;
+      margin-bottom: 30px;
+      text-align: center;
+      border-bottom: 1px solid #485460;
+      padding-bottom: 10px;
+    }
+
+    .sidebar a {
+      color: #dcdde1;
+      text-decoration: none;
+      padding: 12px;
+      border-radius: 6px;
+      margin: 6px 0;
+      display: flex;
+      align-items: center;
+      transition: background 0.2s;
+    }
+
+    .sidebar a:hover {
+      background: #485460;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    .header {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+        .card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .chat-list a {
+            display: block;
+            padding: 15px;
+            background-color: #ecf0f1;
+            margin: 12px 0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #2f3542;
+            position: relative;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+
+        .chat-list a:hover {
+            background-color: #dcdde1;
+        }
+
+        .chat-meta {
+            font-size: 14px;
+            color: #555;
+            margin-top: 8px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff4757;
+            color: white;
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 50%;
+            display: none;
+        }
+
+        .notification-badge.show {
+            display: inline-block;
+        }
+
+        .highlight {
+            background-color: #ffeaa7 !important;
+            border-left: 4px solid #ff4757;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                padding: 15px;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .sidebar h2 {
+                font-size: 22px;
+                margin-bottom: 20px;
+            }
+
+            .sidebar a {
+                font-size: 14px;
+                margin: 10px 0;
+            }
+        }
+
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2f3542;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="file"] {
+            padding: 10px 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="file"]:focus {
+            border-color: #1e90ff;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-group label {
+            font-weight: normal;
+            font-size: 15px;
+            color: #2f3542;
+        }
+    </style>
+</head>
+
+<body>
+
+  <div class="sidebar">
+    <h2>Admin Panel</h2>
+    <a href="/admin">🏠 Home</a>
+    <a href="/admin/chats">💬 Chats</a>
+    <a href="/admin/analytics">📊 Analytics</a>
+    <a href="/admin/settings/bots">⚙️ Settings</a>
+    <a href="#">🚪 Logout</a>
+  </div>
+
+
+    <div class="main-content">
+        <div class="header">Create New Bot</div>
+
+        <div class="card">
+            <form method="post" action="/admin/settings/bot/create" >
+
+                <div class="form-group">
+                    <label for="bot_name">🤖 Bot Title</label>
+                    <input type="text" id="bot_name" name="bot_name" placeholder="Enter bot title" />
+                </div>
+
+                <div class="form-group">
+                    <label for="bot_logo">🖼️ Bot Avatar (URL)</label>
+                    <input type="text" id="bot_logo" name="bot_logo" placeholder="Enter bot avatar URL" />
+                </div>
+
+                <!-- <div class="form-group">
+                    <label for="botLogoFile">Upload Logo</label>
+                    <input type="file" id="botLogoFile" name="bot_logo" />
+                </div> -->
+
+                <div class="form-group">
+                    <label for="greeting_message">💬 Auto Greeting Message</label>
+                    <input type="text" id="greeting_message" name="greeting_message"
+                        placeholder="Hello! How can I help you?" />
+                </div>
+
+                <div class="form-group">
+                    <label for="color">🎨 Bot Color</label>
+                    <input type="color" id="color" name="widget_color" value="#000000" />
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="widget_status" value="Enable" checked /> Enable</label>
+                        <label><input type="radio" name="widget_status" value="Disable" /> Disable</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="whitelist">Whitelist Enabled?</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="whitelist" value="true" /> Yes</label>
+                        <label><input type="radio" name="whitelist" value="false" checked /> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="allowed_domains">✅ Allowed Domains</label>
+                    <input type="text" id="allowed_domains" name="allowed_domains"
+                        placeholder="e.g., example.com, test.com" />
+                </div>
+
+                <div class="form-group">
+                    <label for="disallowed_domains">❌ Disallowed Domains</label>
+                    <input type="text" id="disallowed_domains" name="disallowed_domains"
+                        placeholder="e.g., spam.com, block.com" />
+                </div>
+
+                <div class="form-group">
+                    <label for="pre_questions">💡 Predefined Questions (Max 5)</label>
+                    <input type="text" id="pre_questions" name="pre_questions"
+                        placeholder="e.g., What are your hours?, Where are you located?" />
+                </div>
+
+                <div class="form-group">
+                    <button type="submit"
+                        style="padding: 12px; font-size: 16px; border: none; border-radius: 6px; background-color: #2ed573; color: white; cursor: pointer;">
+                        ➕ Create Bot
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <audio type="audio/mp3" loop src="../../Sounds/Cell Phone Ringing - Sound Effect.mp3"
+        id="notification_call"></audio>
+    <audio type="audio/mp3" src="../../Sounds/new-incoming-message.mp3" id="notification_message"></audio>
+
+</body>
+
+</html>
