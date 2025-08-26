@@ -1,7 +1,4 @@
-// document.cookie = "username=john";
-
-
-const chatBox = document.querySelector('.chat-box');
+const chatBox = document.querySelector('.cb-chat-box');
 const toggleBtn = document.getElementById('chat-toggle');
 const closeBtn = document.getElementById('close-chat');
 const sendBtn = document.getElementById('send-btn');
@@ -9,16 +6,14 @@ const input = document.getElementById('chat-input');
 const messages = document.getElementById('chat-messages');
 const socket = io("http://localhost:3000");
 
-// Show/hide chat box
 toggleBtn.addEventListener('click', () => {
-    chatBox.classList.toggle('hidden');
+    chatBox.classList.toggle('cb-hidden');
 });
 
 closeBtn.addEventListener('click', () => {
-    chatBox.classList.add('hidden');
+    chatBox.classList.add('cb-hidden');
 });
 
-// Send message
 sendBtn.addEventListener('click', sendMessage);
 input.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
@@ -27,48 +22,40 @@ input.addEventListener('keypress', (e) => {
 socket.on('connect', () => {
     console.log('Connected to server with ID:', socket.id);
     let id = getCookie("id");
-    // Emit custom event to server
     console.log(id);
-
     socket.emit('newUserLoaded', id);
 });
 
 socket.on("fetchChatHistory", (chats) => {
-    reloadHistory(chats)
-})
+    reloadHistory(chats);
+});
 
 socket.on("receive-message", (data) => {
     const botReply = document.createElement('div');
-    botReply.className = 'chat-message bot';
+    botReply.className = 'cb-chat-message cb-bot';
     botReply.textContent = data;
     messages.appendChild(botReply);
     messages.scrollTop = messages.scrollHeight;
-})
-
-
+});
 
 function reloadHistory(chats) {
     chats.forEach((msg) => {
         const userMsg = document.createElement('div');
         if (msg.senderId == "Agent") {
-            userMsg.className = 'chat-message bot';
+            userMsg.className = 'cb-chat-message cb-bot';
         } else {
-            userMsg.className = 'chat-message me';
-
+            userMsg.className = 'cb-chat-message cb-me';
         }
         userMsg.textContent = msg.msgContent;
         messages.appendChild(userMsg);
-        //messages.scrollTop = messages.scrollHeight;
-    })
+    });
 }
-
-
 
 function sendMessage() {
     const msg = input.value.trim();
     if (msg) {
         const userMsg = document.createElement('div');
-        userMsg.className = 'chat-message me';
+        userMsg.className = 'cb-chat-message cb-me';
         userMsg.textContent = msg;
         messages.appendChild(userMsg);
         messages.scrollTop = messages.scrollHeight;
@@ -76,34 +63,27 @@ function sendMessage() {
         let id = getCookie("id");
         let host = window.location.host;
         if (id) {
-            id.time = Date.now(); // Update time first
+            id.time = Date.now();
             id.theDomain = host;
             const expirySeconds = 120 * 24 * 60 * 60;
             setCookie("id", id, expirySeconds, "/");
-            console.log(id.time);
             socket.emit("visitor_message", { msg: msg, id: id });
         }
     }
 }
 
 function getCookie(name) {
-    const cookieArr = document.cookie.split(';'); // Split cookie string into an array
-    console.log(document.cookie);
-
-
+    const cookieArr = document.cookie.split(';');
     for (let i = 0; i < cookieArr.length; i++) {
-        let cookiePair = cookieArr[i].split('='); // Split each cookie into name and value
-        /* Remove whitespace at the beginning of the cookie name and compare it with the given string */
+        let cookiePair = cookieArr[i].split('=');
         if (name === cookiePair[0].trim()) {
             try {
-                // Decode the cookie value and return
                 return JSON.parse(decodeURIComponent(cookiePair[1]));
             } catch (e) {
-                return null; // Return null if JSON parsing fails
+                return null;
             }
         }
     }
-    // Return null if not found
     return 'null';
 }
 

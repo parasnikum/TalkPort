@@ -1,6 +1,7 @@
 const mongoose = require("mongoose")
+require("dotenv").config();
 const connect = async () => {
-    await mongoose.connect("mongodb://localhost:27017/chatapp").then(() => {
+    await mongoose.connect(process.env.MONGO_URI).then(() => {
         console.log("DB connected");
 
     }).catch((err) => {

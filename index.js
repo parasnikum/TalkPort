@@ -4,7 +4,7 @@ const app = express();
 const http = require("http").Server(app);
 const io = require('socket.io')(http, {
     cors: {
-        origin: "*",  // allow your frontend origin here
+        origin: "*",  
         methods: ["GET", "POST"]
     }
 });
@@ -24,7 +24,7 @@ let socketData = new Object();
 
 db.connect();
 app.use(cors({
-    origin: "*", // or specific domains like ["https://client.com"]
+    origin: "*",
     credentials: true
 }));
 app.set("view engine", "ejs")
@@ -40,15 +40,13 @@ app.use(express.static('public'));
 
 app.get("/", async (req, res) => {
 
-    // Always generate a new ID only if no cookie exists
-    // console.log("check kookie",JSON.parse(req.cookies.id).user);
     const now = Date.now();
     let cookie = null;
     if (req.cookies) {
         try {
             cookie = JSON.parse(req.cookies.id);
         } catch {
-            cookie = null; // fallback on parse error
+            cookie = null;
         }
     }
     // const cookie = req.cookies ? JSON.parse(req.cookies.id) : null
@@ -76,7 +74,7 @@ app.get("/", async (req, res) => {
         res.cookie("id", JSON.stringify(newCookie), {
             maxAge: 120 * 24 * 60 * 60 * 1000, // 120 days
             sameSite: "none",
-            secure: true, // required for SameSite=None to work
+            secure: true, 
         });
         // res.cookie("id", JSON.stringify(newCookie), { maxAge: 120 * 24 * 60 * 60 * 1000 });
     }
@@ -94,6 +92,10 @@ app.get("/:widgetid/widget.js", async (req, res) => {
         return res.send("widget id is wrong")
     }
     const widgetLoaderPath = path.join(__dirname, "views", "widget.js");
+    let customizedJs = await fs.readFileSync(widgetLoaderPath, "utf8");
+    customizedJs = customizedJs.replace(/{{WIDGET_ID}}/g, widgetid);
+
+
     res.set("Content-Type", "application/javascript");
 
     const now = Date.now();
@@ -125,15 +127,16 @@ app.get("/:widgetid/widget.js", async (req, res) => {
     res.cookie("id", JSON.stringify(newCookie), {
         maxAge: 120 * 24 * 60 * 60 * 1000, // 120 days
         sameSite: 'None',
-        secure : true
+        secure: true
     });
 
-    res.sendFile(widgetLoaderPath);
+    // res.sendFile(widgetLoaderPath);
+    res.send(customizedJs);
 });
 
 
 // Serve widget.html with optional botId
-app.get("/widget.html", (req, res) => {
+app.get("/:botID/widget.html", (req, res) => {
     const botId = req.query.botId || "default-bot";
     const htmlPath = path.join(__dirname, "views", "widget.html");
 
@@ -143,26 +146,43 @@ app.get("/widget.html", (req, res) => {
 
             return res.status(500).send("Error loading widget");
         }
-        // Optionally inject botId into the widget (if needed)
-        const customizedHtml = data.replace("{{BOT_ID}}", botId);
+        // const customizedHtml = data.replace("{{BOT_ID}}", botId);
         res.set("Content-Type", "text/html");
-        res.send(customizedHtml);
+        res.send(data);
     });
 });
 
-// let count = 0;
+app.get("/:botId/style.css", async (req, res) => {
+    const botId = req.params.botId || "default-bot";
+    const widgetDetails = await botSchema.findOne({ uniqueBotId: botId });
+    if (!widgetDetails) {
+        return res.status(404).send("Widget not found");
+    }
+    
+    const cssPath = path.join(__dirname, "public", "style.css");
+    fs.readFile(cssPath, "utf8", (err, data) => {
+        if (err) {
+            console.log(err);
+
+            return res.status(500).send("Error loading widget");
+        }
+        const color = widgetDetails.color || "#2b71f8";
+        data = data.replace(/{{PRIMARY_COLOR}}/g, color);
+
+        res.set("Content-Type", "text/css");
+        res.send(data);
+    });
+});
+
+
 io.on("connection", (socket) => {
-    // count++;
-    // console.log("Client connected. Total:", count);
     socket.on("newUserLoaded", async (cookies) => {
         console.log("new user loaded");
         if (cookies && cookies.user) {
             socketData[cookies.user] = socket.id
             socket.join(cookies.user);
-            console.log(cookies.user);
-            
+
             const isChatExist = await chatSchema.find({ belongsTo: cookies.user, isActive: true });
-            // console.log("new load", isChatExist);
             if (isChatExist.length > 0) {
                 const userid = cookies.user;
                 const allMesg = await fetchAllChat(userid)
@@ -174,7 +194,7 @@ io.on("connection", (socket) => {
 
     socket.on("visitor_message", async (data) => {
         console.log(data);
-        
+
         io.to(data.id.user).emit("update-newchat", { message: data.msg, timestamp: Date.now() });
         const chatResponse = await newChat(data);
         console.log('updated message is emmited :)', chatResponse.message.chatID);
@@ -184,8 +204,8 @@ io.on("connection", (socket) => {
 
     socket.on("agent-message", async (data) => {
         const socketID = socketData[data.uuid];
-        console.log("New Agent Message",data);
-        
+        console.log("New Agent Message", data);
+
         if (socketID) {
             io.to(socketID).emit("receive-message", data.msg)
             await newAgentChat(data.msg, data.uuid, data.chatID)
@@ -198,11 +218,8 @@ io.on("connection", (socket) => {
     })
 
     socket.on("disconnect", () => {
-        // count--;
-        // console.log("Client disconnected. Total:", count);
     });
 
-    // console.log("Socket ID:", socket.id);
 });
 
 
