@@ -136,9 +136,10 @@ app.get("/:widgetid/widget.js", async (req, res) => {
 
 
 // Serve widget.html with optional botId
-app.get("/:botID/widget.html", (req, res) => {
+app.get("/:botID/widget.html", async(req, res) => {
     const botId = req.query.botId || "default-bot";
     const htmlPath = path.join(__dirname, "views", "widget.html");
+    const widgetDetails = await botSchema.findOne({ uniqueBotId: botId });
 
     fs.readFile(htmlPath, "utf8", (err, data) => {
         if (err) {
@@ -146,9 +147,12 @@ app.get("/:botID/widget.html", (req, res) => {
 
             return res.status(500).send("Error loading widget");
         }
-        // const customizedHtml = data.replace("{{BOT_ID}}", botId);
+        let customizedHtml = data.replace(/{{GreetingMessage}}/g, widgetDetails.greetingMessage);
+        customizedHtml = customizedHtml.replace(/{{Bot_Title}}/g, widgetDetails.title);
+        console.log(widgetDetails.title);
+        
         res.set("Content-Type", "text/html");
-        res.send(data);
+        res.send(customizedHtml);
     });
 });
 
@@ -166,8 +170,17 @@ app.get("/:botId/style.css", async (req, res) => {
 
             return res.status(500).send("Error loading widget");
         }
+
         const color = widgetDetails.color || "#2b71f8";
+        const bg_color = widgetDetails.bg_color || "#f8f9fa";
+        const msg_agent_color = widgetDetails.msg_agent_color || "#f1f1f1";
+        const user_msg_color = widgetDetails.user_msg_color || "#e1f3ff";
+        const msg_text_color = widgetDetails.msg_text_color || "#000";
         data = data.replace(/{{PRIMARY_COLOR}}/g, color);
+        data = data.replace(/{{PRIMARY_BG_COLOR}}/g, bg_color);
+        data = data.replace(/{{MSG_AGENT_COLOR}}/g, msg_agent_color);
+        data = data.replace(/{{MSG_USER_COLOR}}/g, user_msg_color);
+        data = data.replace(/{{TEXT_COLOR}}/g, msg_text_color);
 
         res.set("Content-Type", "text/css");
         res.send(data);

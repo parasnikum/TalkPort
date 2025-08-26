@@ -37,6 +37,22 @@ const bot = new mongoose.Schema({
         type: String,
         default: "#000000"
     },
+    bg_color: {
+        type: String,
+        default: "#f8f9fa"
+    },
+    msg_agent_color: {
+        type: String,
+        default: "#f1f1f1"
+    },
+    user_msg_color: {
+        type: String,
+        default: "#e1f3ff"
+    },
+    msg_text_color: {
+        type: String,
+        default: "#000"
+    },
     status: {
         type: String,
         default: "Enable",

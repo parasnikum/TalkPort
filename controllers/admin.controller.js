@@ -182,8 +182,6 @@ const createNewBot = async (req, res) => {
 
 
   if (!bot_name || !bot_logo || !greeting_message || !widget_color || !widget_status || !allowed_domains || !disallowed_domains) {
-    console.log("all fields needed ");
-    console.log(req.body);
 
     return res.json({ "error": "all fields must need" })
   }
@@ -201,8 +199,6 @@ const createNewBot = async (req, res) => {
     greetingMessage: greeting_message
   }
 
-  console.log("ne bot data",data);
-  
   await botSchema.create(data);
   console.log("bot created");
 
@@ -240,8 +236,6 @@ const botList = async (req, res) => {
     conversations: totalBotConvo,
     allbots: bots
   }
-  console.log(payload);
-  
   return res.json(payload);
 }
 
@@ -289,7 +283,67 @@ const botAnalytics = async (req, res) => {
   return;
 }
 
+// List of fields allowed to update
+const allowedUpdateFields = [
+  "whitelist",
+  "allowedDomains",
+  "disallowedDomains",
+  "title",
+  "avtar",
+  "preQuestions",
+  "color",
+  "bg_color",
+  "msg_agent_color",
+  "user_msg_color",
+  "msg_text_color",
+  "status",
+  "greetingMessage",
+];
+
+// Helper to pick allowed fields from source object
+function pickAllowedFields(source, allowedFields) {
+  return allowedFields.reduce((obj, field) => {
+    if (source[field] !== undefined) {
+      obj[field] = source[field];
+    }
+    return obj;
+  }, {});
+}
+
+const updateBot = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({ error: "Missing bot _id in request body" });
+    }
+
+    // Extract only allowed fields from req.body
+    const updateFields = pickAllowedFields(req.body, allowedUpdateFields);
+
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(400).json({ error: "No valid fields provided to update" });
+    }
+
+    const updatedBot = await botSchema.findByIdAndUpdate(
+      _id,
+      { $set: updateFields },
+      { new: true }
+    );
+
+    if (!updatedBot) {
+      return res.status(404).json({ error: "Bot not found" });
+    }
+
+    res.status(200).json({ message: "Bot updated successfully", bot: updatedBot });
+  } catch (error) {
+    console.error("Error updating bot:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
 const homedashboard = async (req, res) => {
   res.render("./admin/dashboard");
 }
-module.exports = { botAnalytics, botList, dashboard, updateBotConfig, homedashboard, allChats, readChats, botConfig, fetchAllBots, createNewBotPage, createNewBot, analyticsPage };
+module.exports = { updateBot, botAnalytics, botList, dashboard, updateBotConfig, homedashboard, allChats, readChats, botConfig, fetchAllBots, createNewBotPage, createNewBot, analyticsPage };

@@ -4,11 +4,11 @@
     --color-primary-hover: darken(var(--color-primary), 10%);
     --color-white: #ffffff;
     --color-light-gray: #f5f5f5;
-    --color-background: #f8f9fa;
-    --color-message-me: #e1f3ff;
-    --color-message-bot: #f1f1f1;
+    --color-background: {{PRIMARY_BG_COLOR}};
+    --color-message-bot: {{MSG_AGENT_COLOR}};
+    --color-message-me: {{MSG_USER_COLOR}};
     --color-border: #ccc;
-    --color-text: #000;
+    --color-text: {{TEXT_COLOR}};
 
     /* Typography */
     --font-family: 'Segoe UI', sans-serif;
