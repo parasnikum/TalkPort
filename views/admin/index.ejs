@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"
-          integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <style>
     :root {
@@ -28,23 +29,23 @@
     body {
       display: flex;
       min-height: 100vh;
-      background-color: var(--main-bg);
+      background-color: #f0f2f5;
       color: #333;
     }
 
     .sidebar {
-      width: 260px;
-      background: var(--sidebar-bg);
+      width: 250px;
+      background: #1e272e;
       color: white;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      padding: 30px 20px;
     }
 
     .sidebar h2 {
-      text-align: center;
+      font-size: 22px;
       margin-bottom: 30px;
-      font-size: 24px;
+      text-align: center;
       border-bottom: 1px solid #485460;
       padding-bottom: 10px;
     }
@@ -52,31 +53,29 @@
     .sidebar a {
       color: #dcdde1;
       text-decoration: none;
-      padding: 12px 16px;
+      padding: 12px;
       border-radius: 6px;
-      margin: 8px 0;
+      margin: 6px 0;
       display: flex;
       align-items: center;
-      transition: background 0.3s;
-      font-size: 16px;
+      transition: background 0.2s;
     }
 
     .sidebar a:hover {
-      background: var(--sidebar-hover);
+      background: #485460;
     }
 
     .main-content {
       flex: 1;
-      padding: 30px 40px;
+      padding: 30px;
       overflow-y: auto;
     }
 
     .header {
       font-size: 28px;
       font-weight: 600;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
-
     .chat-list {
       display: flex;
       flex-direction: column;
@@ -151,42 +150,203 @@
 </head>
 
 <body>
-<div class="sidebar">
-  <h2>Admin Panel</h2>
-  <a href="/admin">🏠 Home</a>
-  <a href="/admin/chats">💬 Chats</a>
-  <a href="/admin/analytics">📊 Analytics</a>
-  <a href="/admin/settings/bots">⚙️ Settings</a>
-  <a href="#">🚪 Logout</a>
-</div>
-
-<div class="main-content">
-  <div class="header">Chats</div>
-  <div class="chat-list">
-    <% if (allChats && allChats.length > 0) { %>
-      <% allChats.forEach(chat => { %>
-        <a href="/admin/chat/<%= chat._id %>" id="chat-<%= chat._id %>">
-          <strong>Visitor - <%= chat.chatID.substring(0, 7) %></strong>
-          <span class="chat-meta">
-            Bot ID: <%= chat.botID %> |
-            Created: <%= chat.createdAt.toDateString() %>
-          </span>
-          <span class="notification-badge" id="notification-badge-<%= chat._id %>">0</span>
-        </a>
-      <% }) %>
-    <% } else { %>
-      <p>No chats found.</p>
-    <% } %>
+  <div class="sidebar">
+    <h2>Admin Panel</h2>
+    <a href="/admin">🏠 Home</a>
+    <a href="/admin/chats">💬 Chats</a>
+    <a href="/admin/analytics">📊 Analytics</a>
+    <a href="/admin/settings/bots">⚙️ Settings</a>
+    <a href="#">🚪 Logout</a>
   </div>
-</div>
 
-<audio type="audio/mp3" loop src="../../Sounds/Cell Phone Ringing - Sound Effect.mp3" id="notification_call"></audio>
-<audio type="audio/mp3" src="../../Sounds/new-incoming-message.mp3" id="notification_message"></audio>
+  <div class="main-content">
+    <div class="header">Chats</div>
+    <div class="chat-list">
+      <% if (allChats && allChats.length> 0) { %>
+        <% allChats.forEach(chat=> { %>
+          <a href="/admin/chat/<%= chat._id %>" id="chat-<%= chat._id %>">
+            <strong>Visitor - <%= chat.chatID.substring(0, 7) %></strong>
+            <span class="chat-meta">
+                Created: <%= chat.createdAt.toDateString() %>
+            </span>
+            <span class="notification-badge" id="notification-badge-<%= chat._id %>">0</span>
+          </a>
+          <% }) %>
+            <% } else { %>
+              <p>No chats found.</p>
+              <% } %>
+    </div>
+  </div>
 
-<script>
-  // Keep your original JavaScript logic unchanged
-  // All event listeners, Socket.IO events, audio notifications, etc.
-  // JS remains the same unless you want to refactor it for optimization or modularity.
-</script>
+  <audio type="audio/mp3" loop src="../../Sounds/Cell Phone Ringing - Sound Effect.mp3" id="notification_call"></audio>
+  <audio type="audio/mp3" src="../../Sounds/new-incoming-message.mp3" id="notification_message"></audio>
+
+
+  <script>
+    const socket = io();
+    const notification = document.getElementById("notification_call");
+    const notificationmsg = document.getElementById("notification_message");
+
+    let pauseTimeout;
+    let isFocus = document.hasFocus(); // initial state
+    let userInteracted = false;
+    let flashInterval;
+
+    // Store unread messages count in localStorage
+    function getUnreadCount(chatID) {
+      const counts = JSON.parse(localStorage.getItem('unreadMessages')) || {};
+      return counts[chatID] || 0;
+    }
+
+    function setUnreadCount(chatID, count) {
+      let counts = JSON.parse(localStorage.getItem('unreadMessages')) || {};
+      counts[chatID] = count;
+      localStorage.setItem('unreadMessages', JSON.stringify(counts));
+    }
+
+    // Track focus state
+    window.addEventListener("focus", () => {
+      isFocus = true;
+      stopFlashingTitle();
+      clearTimeout(pauseTimeout);
+      notification.pause();
+      resetUnreadCount();
+    });
+
+    window.addEventListener("blur", () => {
+      isFocus = false;
+    });
+
+    // Track user interaction to allow audio playback
+    ["click", "keydown", "touchstart"].forEach(event => {
+      window.addEventListener(event, () => {
+        userInteracted = true;
+      }, { once: true });
+    });
+
+    // Request browser notification permission early
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then(permission => {
+        console.log("Notification permission:", permission);
+      });
+    }
+
+    // Play notification sound (if allowed)
+    function playNotificationSound() {
+      if (userInteracted && notification instanceof HTMLMediaElement) {
+        notification.play().catch(error => {
+          console.error("Playback failed:", error);
+        });
+
+        clearTimeout(pauseTimeout);
+        pauseTimeout = setTimeout(() => {
+          notification.pause();
+        }, 30000);
+      } else {
+        console.warn("Cannot play sound — user hasn't interacted yet.");
+      }
+    }
+
+    // Handle incoming message
+    socket.on("new_visitor_message", async (data) => {
+      const chatList = document.querySelector(".chat-list");
+
+      // Create anchor element
+      const anchor = document.createElement('a');
+      anchor.href = `/admin/chat/${data.chatResponse.chat._id}`;
+      anchor.classList.add('chat-link');
+
+      // Format creation date
+      const formattedDate = new Date(data.chatResponse.chat.createdAt).toLocaleString();
+
+      // Create inner HTML structure
+      anchor.innerHTML = `
+                <div class="chat-item" id="chat-${data.chatResponse.chat._id}">
+                    <strong>Visitor - ${data.chatResponse.chat.chatID.substring(0,7) || 'N/A'}</strong>
+                    <span class="chat-meta">
+                        Created: ${formattedDate}
+                    </span>
+                    <span class="notification-badge" id="notification-badge-${data.chatResponse.chat._id}">0</span>
+                </div>
+            `;
+
+      // Insert it at the top of the chat list
+      chatList.insertBefore(anchor, chatList.firstChild);
+
+      // Handle focus and notifications
+      if (isFocus) {
+        console.log("New user came and agent was focused.");
+      } else {
+        playNotificationSound();
+        flashTitle("🔔 New Chat Message!");
+
+        if (Notification.permission === "granted") {
+          new Notification("New Chat Message", {
+            body: data?.message || "A new visitor sent a message.",
+            icon: "/icon.png"
+          });
+        }
+      }
+    });
+
+    // Incoming message notification
+    socket.on("incoming-message-notification", (newmsg) => {
+      const chatID = newmsg.to; // Target chat ID where the message came
+
+      const chatDiv = document.getElementById(`chat-${chatID}`);
+      const badge = document.getElementById(`notification-badge-${chatID}`);
+
+      // If chat element is found
+      if (chatDiv && badge) {
+        // Show the notification on the chat item
+        chatDiv.classList.add("highlight");
+
+        let count = parseInt(badge.textContent) || 0;
+        count++; 
+        badge.textContent = count;
+        badge.classList.add("show"); 
+        
+        // Store the unread count in localStorage
+        setUnreadCount(chatID, count);
+
+        // Play sound if the tab is not focused
+        if (!isFocus && userInteracted) {
+          notificationmsg.play().catch((error) => {
+            console.error("Playback failed:", error);
+          });
+        }
+      }
+    });
+
+    // Reset highlight when user clicks on the chat
+    document.querySelectorAll(".chat-list a").forEach(chat => {
+      chat.addEventListener("click", () => {
+        const badge = chat.querySelector(".notification-badge");
+        if (badge) {
+          badge.classList.remove("show");
+          chat.classList.remove("highlight");
+
+          const chatID = chat.id.split('-')[1];
+          setUnreadCount(chatID, 0); // Reset unread count after opening the chat
+        }
+      });
+    });
+
+    // On page load, restore the unread message count and apply notification badge
+    window.addEventListener('load', () => {
+      document.querySelectorAll(".chat-list a").forEach(chat => {
+        const chatID = chat.id.split('-')[1];
+        const unreadCount = getUnreadCount(chatID);
+        const badge = chat.querySelector(".notification-badge");
+        if (badge) {
+          badge.textContent = unreadCount;
+          if (unreadCount > 0) {
+            badge.classList.add("show");
+          }
+        }
+      });
+    });
+  </script>
 </body>
+
 </html>

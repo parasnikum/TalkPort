@@ -83,14 +83,6 @@ function sendMessage() {
             console.log(id.time);
             socket.emit("visitor_message", { msg: msg, id: id });
         }
-        // Simulated bot reply
-        //setTimeout(() => {
-        //    const botReply = document.createElement('div');
-        //    botReply.className = 'chat-message bot';
-        //    botReply.textContent = "Thanks for your message! 😊";
-        //    messages.appendChild(botReply);
-        //    messages.scrollTop = messages.scrollHeight;
-        //}, 600);
     }
 }
 

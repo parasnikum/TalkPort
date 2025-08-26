@@ -89,7 +89,6 @@ app.get("/", async (req, res) => {
 app.get("/:widgetid/widget.js", async (req, res) => {
     const { widgetid } = req.params;
     const isWidgetFound = await botSchema.findOne({ uniqueBotId: widgetid });
-    console.log(isWidgetFound);
 
     if (!isWidgetFound) {
         return res.send("widget id is wrong")
@@ -126,7 +125,7 @@ app.get("/:widgetid/widget.js", async (req, res) => {
     res.cookie("id", JSON.stringify(newCookie), {
         maxAge: 120 * 24 * 60 * 60 * 1000, // 120 days
         sameSite: 'None',
-        secure: false,
+        secure : true
     });
 
     res.sendFile(widgetLoaderPath);
@@ -160,6 +159,8 @@ io.on("connection", (socket) => {
         if (cookies && cookies.user) {
             socketData[cookies.user] = socket.id
             socket.join(cookies.user);
+            console.log(cookies.user);
+            
             const isChatExist = await chatSchema.find({ belongsTo: cookies.user, isActive: true });
             // console.log("new load", isChatExist);
             if (isChatExist.length > 0) {
@@ -173,8 +174,8 @@ io.on("connection", (socket) => {
 
     socket.on("visitor_message", async (data) => {
         console.log(data);
-
-        io.to(data.id.user).emit("update-newchat", { msg: data.msg, timestamp: Date.now() });
+        
+        io.to(data.id.user).emit("update-newchat", { message: data.msg, timestamp: Date.now() });
         const chatResponse = await newChat(data);
         console.log('updated message is emmited :)', chatResponse.message.chatID);
         chatResponse.isNewChat ? io.emit("new_visitor_message", { chatResponse }) : io.emit("incoming-message-notification", { to: chatResponse.message.chatID })
@@ -183,6 +184,8 @@ io.on("connection", (socket) => {
 
     socket.on("agent-message", async (data) => {
         const socketID = socketData[data.uuid];
+        console.log("New Agent Message",data);
+        
         if (socketID) {
             io.to(socketID).emit("receive-message", data.msg)
             await newAgentChat(data.msg, data.uuid, data.chatID)
@@ -190,6 +193,7 @@ io.on("connection", (socket) => {
     })
 
     socket.on("admin-join-newroom", (data) => {
+        console.log("user joined the room ", data);
         socket.join(data)
     })
 

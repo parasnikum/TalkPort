@@ -7,12 +7,17 @@
 
  .chat-widget {
      position: fixed;
-     bottom: 20px;
+     bottom: 25px;
      right: 20px;
      z-index: 9999;
+     color: black;
+     display: flex;
+     flex-direction: column;
+     align-items: flex-end;
  }
 
  #chat-toggle {
+     position: relative;
      background-color: #2b71f8;
      color: white;
      padding: 12px 16px;
@@ -35,7 +40,7 @@
      overflow: hidden;
      position: relative;
      animation: fadeIn 0.3s ease;
-     margin-top: 12px;
+     margin-bottom: 12px;
  }
 
  @keyframes fadeIn {

@@ -206,7 +206,7 @@
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <style>
-    * {
+  * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -263,6 +263,7 @@
       font-weight: 600;
       margin-bottom: 20px;
     }
+    
     .message-container {
       flex: 1;
       background: white;
@@ -364,7 +365,7 @@
 
   <div class="main-content">
     <div class="header">Messages</div>
-    From: <span id="sender-id"><%= senderId %></span>
+    From: <span id="sender-id">Visitor - <%= senderId %></span>
 
     <div class="message-container">
       <% 
@@ -563,7 +564,7 @@
       const userMsg = document.createElement("div");
       userMsg.classList.add("message", "received");
       userMsg.innerHTML = `
-        <div>${newmsg.msg}</div>
+        <div>${newmsg.msg.substring(0,7)}</div>
         <div class="meta">${new Date(newmsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
       `;
       messages.appendChild(userMsg);

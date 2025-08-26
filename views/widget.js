@@ -30,15 +30,7 @@
 
       // Load JS logic after HTML is injected
       if (!document.getElementById("chat-widget-script")) {
-        const script = document.createElement("script");
-        script.id = "chat-widget-script";
-        script.src = `${scriptBase}/index.js`;
-        script.defer = true;
-        script.type = "module";  // optional: use if your index.js is ES module
-        script.onload = () => {
-          console.log("Chat widget script loaded.");
-        };
-        document.body.appendChild(script);
+        
 
         const socketScript = document.createElement('script');
         // socketScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js';
@@ -49,13 +41,24 @@
         socketScript.crossOrigin = 'anonymous';
         socketScript.referrerPolicy = 'no-referrer';
         socketScript.defer = true;
-        socketScript.onload = () => {
-          // now io is available globally
-          const socket = io();
-          // your socket code here
-        };
+          socketScript.onload = () => {
+            // now io is available globally
+            const socket = io("http://127.0.0.1:3000");
+            // your socket code here
+          };
 
         document.body.appendChild(socketScript);
+
+
+        const script = document.createElement("script");
+        script.id = "chat-widget-script";
+        script.src = `${scriptBase}/index.js`;
+        script.defer = true;
+        script.type = "module";  // optional: use if your index.js is ES module
+        script.onload = () => {
+          console.log("Chat widget script loaded.");
+        };
+        document.body.appendChild(script);
       }
     })
     .catch((err) => console.error("Failed to load widget HTML:", err));

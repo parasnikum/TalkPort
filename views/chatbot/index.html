@@ -1,20 +1,2015 @@
-<!DOCTYPE html>
 <html lang="en">
 
-
 <head>
-    <meta charset="UTF-8">
-    <title>Crisp-Style Live Chat</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"></script>
-    <link rel="stylesheet" href="./style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Online Sahyog | Modern Internet Cafe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-R736V48FB2"></script>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-R736V48FB2');
+    </script>
+    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <style>
+        /* Base Styles */
+        :root {
+            --primary: #0ff0fc;
+            --secondary: #ff00ff;
+            --accent: #ff5500;
+            --dark: #0a0a1a;
+            --darker: #050510;
+            --light: #e0e0ff;
+            --gray: #2a2a3a;
+            --gray-rgba: rgba(1, 1, 1, 1);
+        }
+
+        /* Light mode variables */
+        body.light {
+            --primary: #0d9488;
+            --secondary: #9333ea;
+            --accent: #ea580c;
+            --dark: #f9fafb;
+            --darker: #e5e7eb;
+            --light: #1f2937;
+            --gray: #9ca3af;
+            --gray-rgba: rgba(156, 163, 175, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            overflow-x: hidden;
+            line-height: 1.6;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        body.light {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+        }
+
+        /* 3D Effects */
+        .card-3d {
+            background: rgba(30, 30, 60, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 100, 255, 0.2);
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.light .card-3d {
+            background: rgba(255 255 255 / 0.7);
+            border: 1px solid rgba(13, 148, 136, 0.3);
+            box-shadow: 0 10px 30px rgba(13, 148, 136, 0.2);
+            color: var(--light);
+        }
+
+        .card-3d:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 15px 35px rgba(0, 255, 255, 0.2);
+        }
+
+        body.light .card-3d:hover {
+            box-shadow: 0 15px 35px rgba(13, 148, 136, 0.4);
+        }
+
+        .card-3d::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            z-index: -1;
+            border-radius: 17px;
+            opacity: 0.7;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 5%;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 10, 26, .8);
+            border-bottom: 1px solid rgba(100, 100, 255, .2);
+        }
+
+        body.light header {
+            background: rgba(255, 255, 255, .9);
+            border-bottom: 1px solid rgba(13, 148, 136, .3);
+            color: var(--light);
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(0, 255, 255, .3);
+        }
+
+        .logo span {
+            color: var(--accent)
+        }
+
+        /* Desktop nav layout */
+        nav#navbar {
+            position: static;
+            transform: none;
+            background: transparent;
+            height: auto;
+        }
+
+        nav#navbar ul {
+            display: flex;
+            list-style: none;
+            align-items: center
+        }
+
+        nav#navbar li {
+            margin: 0 12px
+        }
+
+        nav#navbar a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.05rem;
+            padding: 8px 14px;
+            border-radius: 30px;
+            transition: all .25s ease;
+            display: inline-block;
+        }
+
+        nav#navbar a:hover {
+            background: rgba(0, 255, 255, .1);
+            color: var(--primary)
+        }
+
+        .cta-button {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--darker);
+            border: none;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .25s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 255, .3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, .45)
+        }
+
+        /* Hamburger (hidden on desktop) */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: var(--light);
+            z-index: 1102;
+        }
+
+        body.light .menu-toggle {
+            color: var(--dark)
+        }
+
+        /* Backdrop (for click-to-close) */
+        .backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .4);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .3s ease, visibility .3s ease;
+            z-index: 1090;
+        }
+
+        .backdrop.active {
+            opacity: 1;
+            visibility: visible
+        }
+
+        .close-btn {
+            display: none;
+        }
+
+        /* Mobile Drawer Nav */
+        @media (max-width:768px) {
+            .menu-toggle {
+                display: block
+            }
+
+            .cta-button {
+                display: none
+            }
+
+            nav#navbar {
+                position: fixed;
+                top: 0;
+                right: 0;
+                height: 100vh;
+                width: 60%;
+                max-width: 320px;
+                min-width: 260px;
+                background: rgba(10, 10, 26, .97);
+                backdrop-filter: blur(10px);
+                transform: translateX(100%);
+                transition: transform .3s ease-in-out;
+                padding: 64px 20px 20px;
+                box-shadow: -2px 0 18px rgba(0, 0, 0, .55);
+                z-index: 1101;
+            }
+
+            body.light nav#navbar {
+                background: rgba(255, 255, 255, .97)
+            }
+
+            nav#navbar.active {
+                transform: translateX(0)
+            }
+
+            /* Drawer content */
+            nav#navbar ul {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+                width: 100%;
+            }
+
+            nav#navbar li {
+                width: 100%
+            }
+
+            nav#navbar a {
+                width: 100%;
+                font-size: 1.1rem;
+                padding: 10px 0
+            }
+
+            /* Close button */
+            .close-btn {
+                display: block;
+                position: absolute;
+                top: 14px;
+                right: 16px;
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 1.5rem;
+                color: var(--light);
+            }
+
+            body.light .close-btn {
+                color: var(--dark)
+            }
+        }
+
+        .spacer {
+            height: 72px
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
+            z-index: -1;
+            animation: rotate 20s linear infinite;
+            transition: background 0.5s ease;
+        }
+
+        body.light .hero::before {
+            background: radial-gradient(circle, rgba(13, 148, 136, 0.1) 0%, transparent 70%);
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hero-content {
+            max-width: 600px;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .hero h1 span {
+            color: var(--primary);
+            text-shadow: 0 0 15px rgba(255, 196, 0, 0.5);
+            transition: color 0.5s ease, text-shadow 0.5s ease;
+        }
+
+        body.light .hero h1 span {
+            color: var(--primary);
+            text-shadow: 0 0 15px rgba(13, 148, 136, 0.7);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #b0b0ff;
+            transition: color 0.5s ease;
+        }
+
+        body.light .hero p {
+            color: #4b5563;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--darker);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.5);
+        }
+
+        body.light .btn-primary {
+            color: var(--dark);
+            box-shadow: 0 0 15px rgba(13, 148, 136, 0.3);
+        }
+
+        body.light .btn-primary:hover {
+            box-shadow: 0 10px 25px rgba(13, 148, 136, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 255, 255, 0.1);
+            transform: translateY(-5px);
+        }
+
+        body.light .btn-secondary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        body.light .btn-secondary:hover {
+            background: rgba(13, 148, 136, 0.1);
+        }
+
+        .hero-image {
+            position: absolute;
+            right: 5%;
+            width: 45%;
+            height: 70%;
+            background: linear-gradient(45deg, rgba(10, 10, 26, 0.7), rgba(30, 30, 60, 0.7));
+            border-radius: 20px;
+            border: 1px solid rgba(100, 100, 255, 0.3);
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.2);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        body.light .hero-image {
+            background: linear-gradient(45deg, rgba(229, 231, 235, 0.7), rgba(243, 244, 246, 0.7));
+            border: 1px solid rgba(13, 148, 136, 0.3);
+            box-shadow: 0 0 50px rgba(13, 148, 136, 0.2);
+        }
+
+        .hero-image::before {
+            content: '';
+            position: absolute;
+            width: 300%;
+            height: 300%;
+            background: conic-gradient(transparent,
+                    rgba(0, 255, 255, 0.5),
+                    transparent 30%);
+            animation: rotate 10s linear infinite;
+            transition: background 0.5s ease;
+        }
+
+        body.light .hero-image::before {
+            background: conic-gradient(transparent,
+                    rgba(13, 148, 136, 0.3),
+                    transparent 30%);
+        }
+
+        .hero-image-inner {
+            width: 90%;
+            height: 90%;
+            background: rgba(10, 10, 26, 0.9);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        body.light .hero-image-inner {
+            background: rgba(255 255 255 / 0.9);
+            color: var(--light);
+        }
+
+        .hero-image-inner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg,
+                    transparent,
+                    rgba(0, 255, 255, 0.1),
+                    transparent);
+            transform: rotate(45deg);
+            transition: background 0.5s ease;
+        }
+
+        body.light .hero-image-inner::before {
+            background: linear-gradient(45deg,
+                    transparent,
+                    rgba(13, 148, 136, 0.1),
+                    transparent);
+        }
+
+
+
+        /* Blinking cursor */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            background: #0ff0fc;
+            margin-left: 2px;
+            animation: blink 1s step-start infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Terminal */
+
+        .terminal {
+            width: 90%;
+            height: 70%;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            color: #0ff0fc;
+            overflow: hidden;
+            position: relative;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        body.light .terminal {
+            background: rgba(229, 231, 235, 0.9);
+            color: #0d9488;
+
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 100% 30px;
+            pointer-events: none;
+            transition: background 0.5s ease;
+            overflow: hidden;
+        }
+
+        body.light .terminal::before {
+            background: linear-gradient(rgba(13, 148, 136, 0.05) 1px, transparent 1px);
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            transition: border-color 0.5s ease;
+        }
+
+        body.light .terminal-header {
+            border-bottom: 1px solid rgba(13, 148, 136, 0.3);
+        }
+
+        .terminal-title {
+            font-weight: bold;
+            color: #ff5500;
+            transition: color 0.5s ease;
+        }
+
+        body.light .terminal-title {
+            color: var(--accent);
+        }
+
+        .terminal-content {
+            height: calc(100% - 40px);
+            overflow-y: auto;
+        }
+
+        .terminal-line {
+            margin-bottom: 10px;
+        }
+
+        .prompt::before {
+            content: '> ';
+            color: var(--accent);
+            transition: color 0.5s ease;
+        }
+
+        /* Services Section */
+        .services {
+            padding: 100px 5%;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            position: relative;
+            color: var(--light);
+            transition: color 0.5s ease;
+        }
+
+        body.light .section-title {
+            color: var(--light);
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            margin: 15px auto;
+            border-radius: 2px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 35px;
+        }
+
+        .service-card-enhanced {
+            background: rgba(10, 10, 26, 0.7);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            border: 1px solid rgba(100, 100, 255, 0.15);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            color: var(--light);
+        }
+
+        body.light .service-card-enhanced {
+            background: rgba(255 255 255 / 0.9);
+            border: 1px solid rgba(13, 148, 136, 0.3);
+            box-shadow: 0 15px 35px rgba(13, 148, 136, 0.15);
+            color: var(--light);
+        }
+
+        .service-card-enhanced:hover {
+            transform: translateY(-15px) rotateX(5deg) rotateZ(2deg);
+            box-shadow: 0 20px 40px rgba(0, 255, 255, 0.3);
+        }
+
+        body.light .service-card-enhanced:hover {
+            box-shadow: 0 20px 40px rgba(13, 148, 136, 0.3);
+        }
+
+        .service-card-enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            z-index: 2;
+            transition: background 0.5s ease;
+        }
+
+        .service-icon-container {
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(20, 20, 40, 0.5);
+            position: relative;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        body.light .service-icon-container {
+            background: rgba(229, 231, 235, 0.5);
+        }
+
+        .service-icon-container::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent,
+                    rgba(0, 255, 255, 0.2),
+                    transparent 30%);
+            animation: rotate 15s linear infinite;
+            transition: background 0.5s ease;
+        }
+
+        body.light .service-icon-container::before {
+            background: conic-gradient(transparent,
+                    rgba(13, 148, 136, 0.2),
+                    transparent 30%);
+        }
+
+        .service-icon {
+            font-size: 4.5rem;
+            z-index: 2;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        body.light .service-icon {
+            text-shadow: 0 0 20px rgba(13, 148, 136, 0.3);
+        }
+
+        .service-card-enhanced:hover .service-icon {
+            transform: scale(1.2) rotate(5deg);
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.7);
+        }
+
+        body.light .service-card-enhanced:hover .service-icon {
+            text-shadow: 0 0 30px rgba(13, 148, 136, 0.7);
+        }
+
+        .service-content {
+            padding: 30px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .service-content h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            position: relative;
+            padding-bottom: 10px;
+            transition: color 0.5s ease;
+        }
+
+        .service-content h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        .service-content p {
+            color: #b0b0ff;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            transition: color 0.5s ease;
+        }
+
+        body.light .service-content p {
+            color: #4b5563;
+        }
+
+        .service-tag {
+            display: inline-block;
+            background: rgba(0, 255, 255, 0.15);
+            color: var(--primary);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 10px;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        body.light .service-tag {
+            background: rgba(13, 148, 136, 0.15);
+            color: var(--primary);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 5%;
+            background: rgba(5, 5, 16, 0.7);
+            position: relative;
+            transition: background 0.5s ease;
+        }
+
+        body.light .features {
+            background: rgba(229, 231, 235, 0.7);
+            color: var(--light);
+        }
+
+        .features-container {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+
+        .features-content {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .features-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: var(--light);
+            transition: color 0.5s ease;
+        }
+
+        body.light .features-content h2 {
+            color: var(--light);
+        }
+
+        .features-content p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            color: #b0b0ff;
+            transition: color 0.5s ease;
+        }
+
+        body.light .features-content p {
+            color: #4b5563;
+        }
+
+        .features-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .features-list li {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            color: var(--light);
+            transition: color 0.5s ease;
+        }
+
+        body.light .features-list li {
+            color: var(--light);
+        }
+
+        .features-list li i {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-right: 15px;
+            margin-top: 5px;
+            transition: color 0.5s ease;
+        }
+
+        /* Features Image */
+        .features-image {
+            flex: 1;
+            position: relative;
+            height: 590px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            transition: box-shadow 0.5s ease, background 0.5s ease;
+            min-width: 300px;
+        }
+
+        body.light .features-image {
+            box-shadow: 0 20px 40px rgba(13, 148, 136, 0.3);
+            background: rgba(255 255 255 / 0.9);
+        }
+
+        .features-image::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -20%;
+            width: 140%;
+            height: 140%;
+            background: linear-gradient(45deg,
+                    rgba(0, 255, 255, 0.1) 0%,
+                    transparent 30%,
+                    rgba(255, 0, 255, 0.1) 70%,
+                    transparent 100%);
+            animation: moveGradient 10s linear infinite;
+            transition: background 0.5s ease;
+        }
+
+        body.light .features-image::before {
+            background: linear-gradient(45deg,
+                    rgba(13, 148, 136, 0.1) 0%,
+                    transparent 30%,
+                    rgba(147, 51, 234, 0.1) 70%,
+                    transparent 100%);
+        }
+
+        @keyframes moveGradient {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(100px, 100px);
+            }
+        }
+
+        .features-image-inner {
+            width: 100%;
+            height: 10%;
+            background: rgba(10, 10, 26, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        body.light .features-image-inner {
+            background: rgba(255 255 255 / 0.9);
+            color: var(--light);
+        }
+
+        .feature-item {
+            background: rgba(30, 30, 60, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(100, 100, 255, 0.2);
+            color: var(--light);
+            transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease;
+        }
+
+        body.light .feature-item {
+            background: rgba(229, 231, 235, 0.6);
+            border: 1px solid rgba(13, 148, 136, 0.3);
+            color: var(--light);
+        }
+
+        .feature-item i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            transition: color 0.5s ease;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 100px 5%;
+            position: relative;
+        }
+
+        .testimonials h2.section-title {
+            color: var(--light);
+            transition: color 0.5s ease;
+        }
+
+        body.light .testimonials h2.section-title {
+            color: var(--light);
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .testimonial-card {
+            background: rgba(30, 30, 60, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(100, 100, 255, 0.2);
+            color: var(--light);
+            transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease;
+        }
+
+        body.light .testimonial-card {
+            background: rgba(229, 231, 235, 0.6);
+            border: 1px solid rgba(13, 148, 136, 0.3);
+            color: var(--light);
+        }
+
+        .testimonial-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            transition: background 0.5s ease;
+        }
+
+        body.light .testimonial-avatar {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .testimonial-info h4 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: var(--primary);
+            transition: color 0.5s ease;
+        }
+
+        .testimonial-info p {
+            color: var(--primary);
+            font-size: 0.9rem;
+            transition: color 0.5s ease;
+        }
+
+        .testimonial-content p {
+            color: #b0b0ff;
+            font-style: italic;
+            transition: color 0.5s ease;
+        }
+
+        body.light .testimonial-content p {
+            color: #4b5563;
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 100px 5%;
+            background: rgba(5, 5, 16, 0.7);
+            position: relative;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        body.light .contact {
+            background: rgba(229, 231, 235, 0.7);
+            color: var(--light);
+        }
+
+        .contact-container {
+            display: flex;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+
+        .contact-info {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .contact-info h2 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: var(--light);
+            transition: color 0.5s ease;
+        }
+
+        body.light .contact-info h2 {
+            color: var(--light);
+        }
+
+        .contact-details {
+            margin-bottom: 30px;
+        }
+
+        .contact-item {
+            display: flex;
+            margin-bottom: 25px;
+            color: var(--light);
+            transition: color 0.5s ease;
+        }
+
+        body.light .contact-item {
+            color: var(--light);
+        }
+
+        .contact-item i {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-right: 15px;
+            min-width: 30px;
+            transition: color 0.5s ease;
+        }
+
+        /* Contact Form */
+        .contact-form {
+            flex: 1;
+            background: rgba(30, 30, 60, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(100, 100, 255, 0.2);
+            min-width: 300px;
+            transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease;
+        }
+
+        body.light .contact-form {
+            background: rgba(255 255 255 / 0.9);
+            border: 1px solid rgba(13, 148, 136, 0.3);
+            color: var(--light);
+        }
+
+        .contact-form h3 {
+            margin-bottom: 20px;
+            color: var(--primary);
+            transition: color 0.5s ease;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--light);
+            transition: color 0.5s ease;
+        }
+
+        body.light .form-group label {
+            color: var(--light);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            background: rgba(10, 10, 26, 0.7);
+            border: 1px solid rgba(100, 100, 255, 0.3);
+            border-radius: 8px;
+            color: var(--light);
+            font-size: 1rem;
+            transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease;
+        }
+
+        body.light .form-group input,
+        body.light .form-group textarea,
+        body.light .form-group select {
+            background: rgba(229, 231, 235, 0.9);
+            border: 1px solid rgba(13, 148, 136, 0.3);
+            color: var(--light);
+        }
+
+        .form-group textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        /* Footer */
+        footer {
+            padding: 50px 5% 20px;
+            background: rgba(5, 5, 16, 0.9);
+            position: relative;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        body.light footer {
+            background: rgba(229, 231, 235, 0.9);
+            color: var(--light);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+            color: var(--light);
+            transition: color 0.5s ease;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .footer-links {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: #b0b0ff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        body.light .footer-links a {
+            color: #4b5563;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+            padding-left: 5px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(30, 30, 60, 0.6);
+            color: var(--light);
+            transition: all 0.3s ease;
+        }
+
+        body.light .social-links a {
+            background: rgba(229, 231, 235, 0.6);
+            color: var(--light);
+        }
+
+        .social-links a:hover {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            transform: translateY(-5px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(100, 100, 255, 0.2);
+            color: #7070a0;
+            font-size: 0.9rem;
+            transition: color 0.5s ease;
+        }
+
+        body.light .copyright {
+            color: #6b7280;
+            border-top-color: rgba(13, 148, 136, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding-top: 100px;
+                height: auto;
+            }
+
+            .hero-content {
+                margin-bottom: 50px;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .hero-image {
+                position: relative;
+                width: 80%;
+                height: 400px;
+                right: auto;
+                margin: 0 auto;
+            }
+
+            .features-container,
+            .contact-container {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            nav ul {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .features-image {
+                height: 400px;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--primary);
+        }
+
+        a:visited {
+            text-decoration: none;
+            color: var(--primary);
+        }
+
+        option {
+            background-color: var(--dark);
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
-Hi there its a long time man 
+    <!-- Header -->
+    <header>
+        <div class="logo">Online<span>Sahyog</span></div>
 
+        <!-- Mobile Menu Toggle Button -->
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open Navigation" aria-controls="navbar"
+            aria-expanded="false">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <!-- Navigation Menu (drawer on mobile) -->
+        <nav id="navbar" aria-hidden="true">
+            <button class="close-btn" id="close-btn" aria-label="Close Navigation">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+
+
+
+        </nav>
+
+        <!-- Optional header action -->
+        <button class="cta-button" id="theme-toggle" aria-label="Toggle Light/Dark Mode">
+            <i class="fa-solid fa-sun"></i>
+        </button>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>Your Digital Gateway to the Future</h1>
+            <p>Experience premium internet services, financial solutions, and travel bookings at our state-of-the-art
+                cyber cafe. Open 24/7 for your convenience.</p>
+            <div class="hero-buttons">
+                <button class="btn-primary">Explore Services</button>
+                <button class="btn-secondary">Learn More</button>
+            </div>
+        </div>
+        <div class="hero-image" aria-label="Decorative hero image with terminal interface">
+            <div class="hero-image-inner">
+                <div class="terminal-header">
+                    <div class="logo">Online<span>Sahyog</span></div>
+                </div>
+                <div class="terminal" role="log" aria-live="polite" aria-atomic="false">
+                    <div class="terminal-content">
+                        <div class="terminal-line">> Initializing Online Sahyog services...</div>
+                        <div class="terminal-line">> Services available:</div>
+                        <div class="terminal-line">> - Money Transfer (Commission: 1%)</div>
+                        <div class="terminal-line">> - Aadhar Withdrawal (Commission: 1%)</div>
+                        <div class="terminal-line">> - Railway Ticket Booking</div>
+                        <div class="terminal-line">> - Bus Tickets</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section - IMPROVED -->
+    <section class="services" id="services">
+        <h2 class="section-title">Our Services</h2>
+        <div class="services-grid">
+            <!-- Money Transfer -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fas fa-money-bill-wave service-icon" aria-hidden="true"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Money Transfer</h3>
+                    <p>Fast and secure money transfers to any bank account. Instant deposits and withdrawals with
+                        minimal transaction fees.</p>
+                    <span class="service-tag">Instant Processing</span>
+                </div>
+            </div>
+
+            <!-- Cash Withdrawal -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fas fa-cash-register service-icon" aria-hidden="true"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Cash Withdrawal</h3>
+                    <p>Withdraw cash from your bank account without visiting an ATM. Easy verification process for quick
+                        access to funds.</p>
+                    <span class="service-tag">Low Fees</span>
+                </div>
+            </div>
+
+
+            <!-- ATM -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fa-solid fa-laptop-code service-icon"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Web Developement</h3>
+                    <p>Custom website solutions tailored to your business needs. From responsive design to backend
+                        integration, we deliver modern, secure, and scalable web applications.</p>
+                    <span class="service-tag"><a href="">Get Website now</a></span>
+                </div>
+            </div>
+
+            <!-- Aadhar Cash Withdrawal -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fas fa-id-card service-icon" aria-hidden="true"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Aadhar Cash Withdrawal</h3>
+                    <p>Biometric cash withdrawal using your Aadhar card. No bank account needed for this service.
+                        Government verified process.</p>
+                    <span class="service-tag">Biometric Security</span>
+                </div>
+            </div>
+
+            <!-- Tickets Booking -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fas fa-ticket-alt service-icon" aria-hidden="true"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Tickets Booking</h3>
+                    <p>Book tickets for all types of travel - railway, flight, and bus. Real-time availability and
+                        instant confirmations at competitive prices.</p>
+                    <span class="service-tag">Best Deals</span>
+                </div>
+            </div>
+
+            <!-- Railway -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fas fa-train service-icon" aria-hidden="true"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Railway Tickets</h3>
+                    <p>IRCTC authorized agent for railway ticket booking. Get confirmed tickets even during peak seasons
+                        with our guaranteed service.</p>
+                    <span class="service-tag">IRCTC Authorized</span>
+                </div>
+            </div>
+
+            <!-- Flight -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fas fa-plane service-icon" aria-hidden="true"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Flight Booking</h3>
+                    <p>Best deals on domestic and international flights. Compare prices across multiple airlines and
+                        book with just a few clicks.</p>
+                    <span class="service-tag">Global Coverage</span>
+                </div>
+            </div>
+
+            <!-- Bus -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fas fa-bus service-icon" aria-hidden="true"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Bus Tickets</h3>
+                    <p>Book bus tickets for inter-city travel. Multiple operators and routes available with real-time
+                        seat availability.</p>
+                    <span class="service-tag">Extensive Network</span>
+                </div>
+            </div>
+
+            <!-- Printout -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fas fa-print service-icon" aria-hidden="true"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Printout Service</h3>
+                    <p>High-quality black & white and color printing. Documents, photos, and presentations with
+                        professional finishing options.</p>
+                    <span class="service-tag">High Resolution</span>
+                </div>
+            </div>
+
+            <!-- Xerox -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fas fa-copy service-icon" aria-hidden="true"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Xerox & Photocopy</h3>
+                    <p>Fast and accurate document duplication. Volume discounts available for bulk copies with binding
+                        and stapling options.</p>
+                    <span class="service-tag">Bulk Discount</span>
+                </div>
+            </div>
+
+            <!-- Photocopy -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fas fa-images service-icon" aria-hidden="true"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Photocopy</h3>
+                    <p>Professional photocopy services with various paper sizes. Perfect color reproduction for
+                        important documents.</p>
+                    <span class="service-tag">Quality Guaranteed</span>
+                </div>
+            </div>
+
+            <!-- Passport Size Photo -->
+            <div class="service-card-enhanced">
+                <div class="service-icon-container">
+                    <i class="fas fa-camera service-icon" aria-hidden="true"></i>
+                </div>
+                <div class="service-content">
+                    <h3>Passport Size Photos</h3>
+                    <p>Professional passport photos with instant digital and printed copies. Background options
+                        available for various document requirements.</p>
+                    <span class="service-tag">Compliance Ready</span>
+                </div>
+            </div>
+
+
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="features-container">
+            <div class="features-content">
+                <h2>Why Choose<div style="font-size:40px; display: inline;" class="logo"> Online<span>Sahyog</span>
+                    </div>
+                    ?</h2>
+
+                <p>Our cyber cafe offers cutting-edge technology and services that make your digital experience
+                    effortless and productive. We combine the convenience of modern banking with next-generation
+                    internet solutions.</p>
+
+                <ul class="features-list">
+                    <li>
+                        <i class="fas fa-bolt" aria-hidden="true"></i>
+                        <div>
+                            <h3>9AM - 7PM Availability</h3>
+                            <p>We're open round the clock so you can access services whenever you need them.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                        <div>
+                            <h3>Secure Transactions</h3>
+                            <p>All financial transactions are encrypted and comply with RBI guidelines.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-headset" aria-hidden="true"></i>
+                        <div>
+                            <h3>Expert Support</h3>
+                            <p>Our trained staff is ready to assist you with any service or technical issue.</p>
+                        </div>
+                    </li>
+
+                </ul>
+            </div>
+            <div class="features-image" aria-label="Features image with icons representing services">
+                <div class="features-image-inner">
+                    <div class="feature-item">
+                        <i class="fa-solid fa-laptop-code"></i>
+                        <h4>Web Developement</h4>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-indian-rupee-sign"></i>
+                        <h4>Cash Withdrawal</h4>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-file-contract"></i>
+                        <h4>Form Filling</h4>
+                    </div>
+
+                    <div class="feature-item">
+                        <i class="fas fa-camera service-icon" aria-hidden="true"></i>
+                        <h4>Passport Size photo Printing</h4>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-bus service-icon" aria-hidden="true"></i>
+                        <h4>Bus Tickets</h4>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-file-invoice"></i>
+                        <h4>Passport Apply</h4>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-wifi"></i>
+                        <h4>Airtel Airfiber Booking</h4>
+                    </div>
+
+                    <div class="feature-item">
+                        <i class="fa-solid fa-sim-card"></i>
+                        <h4>Jio Sim Booking</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <h2 class="section-title">Customer Testimonials</h2>
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-header">
+                    <div class="testimonial-avatar" aria-hidden="true">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="testimonial-info">
+                        <h4>Rajesh Kumar</h4>
+                        <p>Business Owner</p>
+                    </div>
+                </div>
+                <div class="testimonial-content">
+                    <p>"The money transfer service is incredibly fast. I use it weekly to send money to my family. The
+                        commission rates are much better than other providers."</p>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-header">
+                    <div class="testimonial-avatar" aria-hidden="true">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="testimonial-info">
+                        <h4>Swati Mehta</h4>
+                        <p>Student</p>
+                    </div>
+                </div>
+                <div class="testimonial-content">
+                    <p>"Booking my railway tickets here every month for college visits. The staff is helpful and I never
+                        miss my train thanks to their reminders."</p>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-header">
+                    <div class="testimonial-avatar" aria-hidden="true">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="testimonial-info">
+                        <h4>Vikram Patel</h4>
+                        <p>Travel Agent</p>
+                    </div>
+                </div>
+                <div class="testimonial-content">
+                    <p>"As a travel agent, I recommend Online Sahyog to all my clients. Their booking services are
+                        seamless
+                        and their customer service is top-notch."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="contact-container">
+            <div class="contact-info">
+                <h2>Get In Touch</h2>
+                <div class="contact-details">
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                        <div>
+                            <h3>Our Location</h3>
+                            <p>7,Rishi Bankim Chandra Road Howrah 711101</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone-alt" aria-hidden="true"></i>
+                        <div>
+                            <h3>Phone Number</h3>
+                            <p>8240551789</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                        <div>
+                            <h3>Email Address</h3>
+                            <p>onlinesahyog11@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock" aria-hidden="true"></i>
+                        <div>
+                            <h3>Opening Hours</h3>
+                            <p>9AM - 7PM - Open Every Day</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="contact-form" >
+                <h3>Send Us a Message</h3>
+                <form action="https://api.web3forms.com/submit" method="POST" netlify>
+                    <input type="hidden" name="access_key" value="af296308-66f2-4d5c-b66c-50f53c7c11da" />
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" placeholder="Enter your name" name="name" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="Enter your email" name="email" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact">Contact Number</label>
+                        <input type="number" id="contact" placeholder="Enter your Phone number" name="contact" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="service">Service Required</label>
+                        <select id="service" name="subject" required>
+                            <option>Money Transfer</option>
+                            <option>Cash Withdrawal</option>
+                            <option>Aadhar Cash Withdrawal</option>
+                            <option>Railway Ticket Booking</option>
+                            <option>Flight Booking</option>
+                            <option>Bus Ticket Booking</option>
+                            <option>Passport Size Photo</option>
+                            <option>Internet Access</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" placeholder="How can we help you?" name="message" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>
+                    <div class="logo">Online<span>Sahyog</span></div>
+                </h3>
+                <p>Your one-stop digital solution center for all internet, financial, and travel services. </p>
+                <div class="social-links">
+                    <a href="https://api.whatsapp.com/send/?phone=8240551789&text&type=phone_number&app_absent=0"
+                        aria-label="Whatsapp"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Our Services</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Money Transfer</a></li>
+                    <li><a href="#">Cash Withdrawal</a></li>
+                    <li><a href="#">Ticket Booking</a></li>
+                    <li><a href="#">Internet Cafe</a></li>
+                </ul>
+            </div>
+
+        </div>
+        <div class="copyright">
+            <p>&copy; <span id="current-year"></span> Online Sahyog. All rights reserved.
+                Designed with <i class="fas fa-heart" style="color: #ff5500;"></i>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple animation for terminal effect
+        document.addEventListener('DOMContentLoaded', function () {
+            const terminalContent = document.querySelector('.terminal-content');
+            const lines = terminalContent.querySelectorAll('.terminal-line');
+
+            // Hide all lines initially
+            lines.forEach(line => line.style.opacity = '0');
+
+            // Show lines one by one
+            lines.forEach((line, index) => {
+                setTimeout(() => {
+                    line.style.transition = 'opacity 0.5s ease';
+                    line.style.opacity = '1';
+                }, 300 * index);
+            });
+
+            // Header scroll effect
+            window.addEventListener('scroll', function () {
+                const header = document.querySelector('header');
+                if (window.scrollY > 100) {
+                    header.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.3)';
+                } else {
+                    header.style.boxShadow = 'none';
+                }
+            });
+
+            // Theme toggle button
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const body = document.body;
+            const sunIcon = '<i class="fas fa-sun"></i>';
+            const moonIcon = '<i class="fas fa-moon"></i>';
+
+            // Load saved theme from localStorage
+            if (localStorage.getItem('theme') === 'light') {
+                body.classList.add('light');
+                themeToggleBtn.innerHTML = moonIcon;
+            } else {
+                themeToggleBtn.innerHTML = sunIcon;
+            }
+
+            themeToggleBtn.addEventListener('click', () => {
+                body.classList.toggle('light');
+                if (body.classList.contains('light')) {
+                    themeToggleBtn.innerHTML = moonIcon;
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    themeToggleBtn.innerHTML = sunIcon;
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+        });
+
+
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const terminalContent = document.querySelector('.terminal-content');
+            const lines = [
+                "> Initializing Online Sahyog services...",
+                "> Services available:",
+                "> - Money Transfer (Commission: 1%)",
+                "> - Aadhar Withdrawal (Commission: 1%)",
+                "> - Railway Ticket Booking",
+                "> - Bus Tickets"
+            ];
+
+            function typeLines() {
+                terminalContent.innerHTML = "";
+                let lineIndex = 0;
+
+                function typeLine() {
+                    if (lineIndex >= lines.length) return;
+
+                    const line = document.createElement("div");
+                    line.classList.add("terminal-line");
+
+                    terminalContent.appendChild(line);
+
+                    let charIndex = 0;
+                    const text = lines[lineIndex];
+
+                    function typeChar() {
+                        if (charIndex < text.length) {
+                            line.textContent += text.charAt(charIndex);
+                            charIndex++;
+                            setTimeout(typeChar, 50);
+                        } else {
+                            line.insertAdjacentHTML("beforeend", '<span class="cursor"></span>');
+                            lineIndex++;
+                            setTimeout(() => {
+                                line.querySelector(".cursor").remove();
+                                typeLine();
+                            }, 500);
+                        }
+                    }
+                    typeChar();
+                }
+
+                typeLine();
+
+                setTimeout(() => {
+                    typeLines();
+                }, lines.length * 2700);
+            }
+
+            typeLines();
+        });
+
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const yearSpan = document.getElementById("current-year");
+            if (yearSpan) {
+                yearSpan.textContent = new Date().getFullYear();
+            }
+        });
+    </script>
+
+    <script>
+
+        const menuToggle = document.getElementById('menu-toggle');
+        const navbar = document.getElementById('navbar');
+        const closeBtn = document.getElementById('close-btn');
+        const navLinks = navbar.querySelectorAll('a');
+
+        function openMenu() {
+            navbar.classList.add('active');
+            navbar.setAttribute('aria-hidden', 'false');
+            menuToggle.setAttribute('aria-expanded', 'true');
+            // swap icon to xmark
+            menuToggle.style.display = "block"
+            menuToggle.innerHTML = '';
+        }
+
+        function closeMenu() {
+            menuToggle.style.display = 'block';
+            navbar.classList.remove('active');
+            navbar.setAttribute('aria-hidden', 'true');
+            menuToggle.setAttribute('aria-expanded', 'false');
+            menuToggle.innerHTML = '';
+        }
+        function isOpen() {
+            return navbar.classList.contains('active');
+        }
+
+        menuToggle.addEventListener('click', () => {
+            menuToggle.style.display = 'block';
+            if (isOpen()) {
+                closeMenu();
+                menuToggle.style.display = 'display';
+            }
+            else {
+                openMenu();
+                menuToggle.style.display = 'none';
+            }
+
+        });
+
+        closeBtn.addEventListener('click', closeMenu);
+
+        navLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isOpen()) closeMenu();
+        });
+
+        const MQ = 768;
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > MQ && isOpen()) {
+                closeMenu();
+            }
+        });
+    </script>
     <script src="http://localhost:3000/asds/widget.js"></script>
-   
-
 
 </body>
 
