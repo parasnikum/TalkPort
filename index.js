@@ -175,6 +175,28 @@ app.get("/:botId/style.css", async (req, res) => {
 });
 
 
+app.get("", async (req, res) => {
+    const botId = req.params.botId || "default-bot";
+    const widgetDetails = await botSchema.findOne({ uniqueBotId: botId });
+    if (!widgetDetails) {
+        return res.status(404).send("Widget not found");
+    }
+    
+    const cssPath = path.join(__dirname, "public", "style.css");
+    fs.readFile(cssPath, "utf8", (err, data) => {
+        if (err) {
+            console.log(err);
+
+            return res.status(500).send("Error loading widget");
+        }
+        const color = widgetDetails.color || "#2b71f8";
+        data = data.replace(/{{PRIMARY_COLOR}}/g, color);
+
+        res.set("Content-Type", "text/css");
+        res.send(data);
+    });
+});
+
 io.on("connection", (socket) => {
     socket.on("newUserLoaded", async (cookies) => {
         console.log("new user loaded");

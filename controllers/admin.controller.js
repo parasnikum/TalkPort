@@ -107,7 +107,6 @@ const readChats = async (req, res) => {
   try {
     const { chatID } = req.params;
     const messages = await messageSchema.find({ chatID: chatID }).sort({ timestamp: 1 });
-    console.log("reading chats");
 
     res.json(
       messages.map(msg => ({
@@ -150,8 +149,6 @@ const botConfig = async (req, res) => {
 
 
 const updateBotConfig = async (req, res) => {
-  console.log(req.body);
-  console.log();
   const { bot_name, bot_logo, greeting_message, bot_status, whitelist_domain } = req.body;
   await botSchema.updateOne(
     { _id: req.params.botid },
@@ -182,8 +179,6 @@ const createNewBot = async (req, res) => {
 
 
   if (!bot_name || !bot_logo || !greeting_message || !widget_color || !widget_status || !allowed_domains || !disallowed_domains) {
-    console.log("all fields needed ");
-    console.log(req.body);
 
     return res.json({ "error": "all fields must need" })
   }
@@ -201,10 +196,8 @@ const createNewBot = async (req, res) => {
     greetingMessage: greeting_message
   }
 
-  console.log("ne bot data",data);
-  
+
   await botSchema.create(data);
-  console.log("bot created");
 
   res.render("./admin/createNewBot")
 }
@@ -240,8 +233,7 @@ const botList = async (req, res) => {
     conversations: totalBotConvo,
     allbots: bots
   }
-  console.log(payload);
-  
+
   return res.json(payload);
 }
 
@@ -274,13 +266,13 @@ const botAnalytics = async (req, res) => {
       satisfactionRate,
       totalBots,
       activeBots,
-      bots : bots
+      bots: bots
     };
 
     res.json(analytics);
   } catch (error) {
     console.log(error);
-    
+
     res.json({ "Error getting chat counts ": error });
   }
   // bots.forEach(bot => {
@@ -288,8 +280,46 @@ const botAnalytics = async (req, res) => {
   // });
   return;
 }
+const botStatusUpdate = async (req, res) => {
+  const { botId } = req.params;
+  const { status } = req.body;
+
+  if (!["Enable", "Disable"].includes(status)) {
+    return res.status(400).json({ error: "Invalid status value" });
+  }
+
+  try {
+    const bot = await botSchema.findById(botId);
+    if (!bot) {
+      return res.status(404).json({ error: "Bot not found" });
+    }
+
+    bot.status = status;
+    await bot.save();
+    return res.json({ message: "Bot status updated successfully", bot });
+  } catch (error) {
+    console.error("Error updating bot status:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
+
+
+const deleteBot = async (req, res) => {
+  const { botId } = req.params;
+  try {
+    const bot = await botSchema.findById(botId);
+    if (!bot) {
+      return res.status(404).json({ error: "Bot not found" });
+    }
+    await botSchema.deleteOne({ _id: botId });
+    return res.json({ message: "Bot deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting bot:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
 
 const homedashboard = async (req, res) => {
   res.render("./admin/dashboard");
 }
-module.exports = { botAnalytics, botList, dashboard, updateBotConfig, homedashboard, allChats, readChats, botConfig, fetchAllBots, createNewBotPage, createNewBot, analyticsPage };
+module.exports = {deleteBot , botStatusUpdate, botAnalytics, botList, dashboard, updateBotConfig, homedashboard, allChats, readChats, botConfig, fetchAllBots, createNewBotPage, createNewBot, analyticsPage };

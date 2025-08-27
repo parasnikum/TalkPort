@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { botAnalytics, botList, dashboard, updateBotConfig, homedashboard, allChats, readChats, botConfig, fetchAllBots, createNewBot, createNewBotPage, analyticsPage } = require("../controllers/admin.controller"); // path as needed
+const { deleteBot, botStatusUpdate, botAnalytics, botList, dashboard, updateBotConfig, homedashboard, allChats, readChats, botConfig, fetchAllBots, createNewBot, createNewBotPage, analyticsPage } = require("../controllers/admin.controller"); // path as needed
 
 router.get("/", homedashboard);
 router.get("/chats", allChats);
@@ -15,5 +15,7 @@ router.get("/", analyticsPage);
 router.get("/dashboardDetails", dashboard);
 router.get("/botDetails", botList);
 router.post("/botAnalytics", botAnalytics);
+router.post("/:botId/updateBotStatus", botStatusUpdate);
+router.delete("/:botId/deleteBot", deleteBot);
 
 module.exports = router;
