@@ -319,11 +319,21 @@ const deleteBot = async (req, res) => {
   }
 }
 
-const updateBot = () =>{
-  
+const updateBot = async(req,res) => {
+  const { bot_name, bot_logo, greeting_message, bot_status, whitelist_domain } = req.body;
+  await botSchema.updateOne(
+    { _id: req.params.botid },
+    {
+      title: bot_name,
+      avtar: bot_logo,
+      greetingMessage: greeting_message,
+      status: bot_status,
+      allowedDomains: whitelist_domain
+    }
+  );
 }
 
 const homedashboard = async (req, res) => {
   res.render("./admin/dashboard");
 }
-module.exports = {updateBot , deleteBot , botStatusUpdate, botAnalytics, botList, dashboard, updateBotConfig, homedashboard, allChats, readChats, botConfig, fetchAllBots, createNewBotPage, createNewBot, analyticsPage };
+module.exports = { updateBot, deleteBot, botStatusUpdate, botAnalytics, botList, dashboard, updateBotConfig, homedashboard, allChats, readChats, botConfig, fetchAllBots, createNewBotPage, createNewBot, analyticsPage };

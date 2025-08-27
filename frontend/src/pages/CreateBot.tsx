@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bot as BotIcon, Save } from 'lucide-react';
 import { toast } from 'react-toastify';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 const CreateBot: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const CreateBot: React.FC = () => {
     };
 
     try {
-      const response = await fetch('http://127.0.0.1:3000/admin/settings/bot/create', {
+      const response = await fetch(`${API_BASE_URL}/admin/settings/bot/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

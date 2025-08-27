@@ -94,6 +94,7 @@ app.get("/:widgetid/widget.js", async (req, res) => {
     const widgetLoaderPath = path.join(__dirname, "views", "widget.js");
     let customizedJs = await fs.readFileSync(widgetLoaderPath, "utf8");
     customizedJs = customizedJs.replace(/{{WIDGET_ID}}/g, widgetid);
+    customizedJs = customizedJs.replace(/{{WIDGET_BASE_URL}}/g, process.env.WIDGET_BASE_URL);
 
 
     res.set("Content-Type", "application/javascript");
@@ -241,6 +242,6 @@ io.on("connection", (socket) => {
 
 
 
-http.listen(3000, () => {
-    console.log("Server running at http://127.0.0.1:3000");
+http.listen(3045, () => {
+    console.log("Server running at http://127.0.0.1:3045");
 });

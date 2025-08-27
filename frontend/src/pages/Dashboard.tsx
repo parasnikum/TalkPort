@@ -3,6 +3,7 @@ import { MessageSquare, Bot, TrendingUp, Users } from 'lucide-react';
 import { Analytics, Chat } from '../types';
 import { useSocket } from '../contexts/SocketContext';
 import axios from 'axios';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 
 
@@ -28,7 +29,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await axios.get("http://127.0.0.1:3000/admin/dashboardDetails");
+      const response = await axios.get(`${API_BASE_URL}/admin/dashboardDetails`);
       setRecentChats(response.data.recentChats);
       setAnalytics({
         totalChats: response.data.chatCount,

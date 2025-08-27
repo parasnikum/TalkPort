@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { Bot } from '../types';
 import { useSocket } from '../contexts/SocketContext';
 import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL;
 import { toast } from 'react-toastify';
 
 const BotList: React.FC = () => {
@@ -43,7 +45,8 @@ const BotList: React.FC = () => {
   useEffect(() => {
     const fetchBotList = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:3000/admin/botDetails");
+  const response = await axios.get(`${API_BASE_URL}/admin/botDetails`);
+        console.log(API_BASE_URL);
 
         const botsData = response?.data?.allbots;
         setConversations(response?.data?.conversations)
@@ -79,7 +82,7 @@ const BotList: React.FC = () => {
         break;
     }
     if (action === 'Enable' || action === 'Disable') {
-      await axios.post(`http://127.0.0.1:3000/admin/${botId}/updateBotStatus`, { status: action })
+  await axios.post(`${API_BASE_URL}/admin/${botId}/updateBotStatus`, { status: action })
         .catch(err => {
           console.error('Failed to update bot status:', err);
         });
@@ -87,7 +90,7 @@ const BotList: React.FC = () => {
       action == 'Enable' ? toast.success("Bot Enabled") : toast.error("Bot Disabled");
 
     } else if (action === 'delete') {
-      await axios.delete(`http://127.0.0.1:3000/admin/${botId}/deleteBot`)
+  await axios.delete(`${API_BASE_URL}/admin/${botId}/deleteBot`)
         .catch(err => {
           console.error('Failed to delete bot:', err);
         });
@@ -139,9 +142,8 @@ const BotList: React.FC = () => {
       user_msg_color: getValue('input[name="widget_bg_color"]'),
       msg_text_color: getValue('input[name="message_color"]'),
     };
-    console.log(updatedBot);
-    
-    const response = axios.post('http://127.0.0.1:3000/admin/updateBot', updatedBot)
+
+  const response = axios.post(`${API_BASE_URL}/admin/updateBot`, updatedBot)
       .then(res => {
         setBots(prev => prev.map(bot => bot._id === updatedBot._id ? updatedBot as Bot : bot));
       })
@@ -340,11 +342,11 @@ const BotList: React.FC = () => {
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Script Tag:</label>
                 <div className="relative bg-gray-100 text-gray-800 font-mono text-sm rounded-md p-3 break-all">
-                  <code>{`<script src="http://127.0.0.1:3000/${selectedBot.uniqueBotId}/widget.js"></script>`}</code>
+                  <code>{`<script src="${API_BASE_URL}/${selectedBot.uniqueBotId}/widget.js"></script>`}</code>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(
-                        `<script src="http://127.0.0.1:3000/${selectedBot.uniqueBotId}/widget.js"></script>`
+                        `<script src="${API_BASE_URL}/${selectedBot.uniqueBotId}/widget.js"></script>`
                       );
 
                       toast.success("Script copied to clipboard!");

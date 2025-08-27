@@ -4,7 +4,7 @@ const closeBtn = document.getElementById('close-chat');
 const sendBtn = document.getElementById('send-btn');
 const input = document.getElementById('chat-input');
 const messages = document.getElementById('chat-messages');
-const socket = io("http://localhost:3000");
+const socket = io(window.env.SOCKET_URL);
 
 toggleBtn.addEventListener('click', () => {
     chatBox.classList.toggle('cb-hidden');

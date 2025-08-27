@@ -3,6 +3,7 @@ import { TrendingUp, Clock, Star, MessageSquare, Bot as BotIcon } from 'lucide-r
 import { Bot, Analytics as AnalyticsType } from '../types';
 import { useSocket } from '../contexts/SocketContext';
 import axios from 'axios';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 const Analytics: React.FC = () => {
   const [analytics, setAnalytics] = useState<AnalyticsType>({
@@ -41,7 +42,7 @@ const Analytics: React.FC = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const response = await axios.post('http://127.0.0.1:3000/admin/botAnalytics');
+        const response = await axios.post(`${API_BASE_URL}/admin/botAnalytics`);
         setAnalytics(response.data);
 
       } catch (error) {
@@ -51,7 +52,7 @@ const Analytics: React.FC = () => {
 
     const fetchBotPerformance = async () => {
       try {
-        const response = await axios.post('http://127.0.0.1:3000/admin/botAnalytics');
+        const response = await axios.post(`${API_BASE_URL}/admin/botAnalytics`);
         setBotPerformance(response.data.bots);
       } catch (error) {
         console.error('Error fetching bot performance:', error);

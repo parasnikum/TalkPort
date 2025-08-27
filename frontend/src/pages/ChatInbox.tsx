@@ -3,6 +3,7 @@ import { Search, Filter, MessageSquare, User } from 'lucide-react';
 import { Chat, Message } from '../types';
 import { useSocket } from '../contexts/SocketContext';
 import axios from 'axios';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 const ChatInbox: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -68,7 +69,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:3000/admin/chats`);
+        const response = await axios.get(`${API_BASE_URL}/admin/chats`);
         const rawData = response.data;
 
         const chatsArray =
@@ -153,7 +154,7 @@ useEffect(() => {
     setChats(prev => prev.map(c => (c.id === chat.id ? { ...c, unread: false } : c)));
 
     try {
-      const response = await axios.get(`http://127.0.0.1:3000/admin/chat/${chat.id}`);
+      const response = await axios.get(`${API_BASE_URL}/admin/chat/${chat.id}`);
       console.log("Fetched messages:", response.data);
       console.log("Chat ID:", chat.id);
       socket?.emit("admin-join-newroom", chat.belongsTo);

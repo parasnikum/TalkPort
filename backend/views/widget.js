@@ -1,7 +1,7 @@
 (function () {
   const botId = `{{WIDGET_ID}}` || "default-bot";
-  const scriptBase = "http://127.0.0.1:3000";
-  
+  const scriptBase = `{{WIDGET_BASE_URL}}`
+
   // Load CSS once
   if (!document.getElementById("chat-widget-style")) {
     const link = document.createElement("link");
@@ -21,6 +21,14 @@
   }
   const container = document.getElementById("chat-widget-container");
 
+  const envScript = document.createElement("script");
+  envScript.type = "text/javascript";
+  envScript.innerHTML = `
+    window.env = {
+      SOCKET_URL: "{{WIDGET_BASE_URL}}"
+    };
+  `;
+  document.head.appendChild(envScript);
   // Fetch and inject widget HTML
   fetch(`${scriptBase}/${botId}/widget.html?botId=${botId}`)
     .then((res) => res.text())
@@ -28,23 +36,23 @@
       container.innerHTML = html;
       // Load JS logic after HTML is injected
       if (!document.getElementById("chat-widget-script")) {
-        
+
         console.log(html);
-        
+
         const socketScript = document.createElement('script');
         // socketScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js';
         // socketScript.integrity = 'sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q==';
         // socketScript.crossOrigin = 'anonymous';
         // socketScript.referrerPolicy = 'no-referrer';
-        socketScript.src = "http://127.0.0.1:3000/socket.js"
+        socketScript.src = `${scriptBase}/socket.js`
         socketScript.crossOrigin = 'anonymous';
         socketScript.referrerPolicy = 'no-referrer';
         socketScript.defer = true;
-          socketScript.onload = () => {
-            // now io is available globally
-            const socket = io("http://127.0.0.1:3000");
-            // your socket code here
-          };
+        socketScript.onload = () => {
+          // now io is available globally
+          const socket = io(`${scriptBase}`);
+          // your socket code here
+        };
 
         document.body.appendChild(socketScript);
 

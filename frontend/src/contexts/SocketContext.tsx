@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+const WS_URL = import.meta.env.VITE_WS_URL;
 
 
 interface SocketContextType {
@@ -26,7 +27,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     // Replace with your actual socket server URL
-    const socket = io('ws://localhost:3000', {
+    const socket = io(WS_URL, {
       autoConnect: false,
     });
 
