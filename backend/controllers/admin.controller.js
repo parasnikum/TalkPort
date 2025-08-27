@@ -319,7 +319,11 @@ const deleteBot = async (req, res) => {
   }
 }
 
+const updateBot = () =>{
+  
+}
+
 const homedashboard = async (req, res) => {
   res.render("./admin/dashboard");
 }
-module.exports = {deleteBot , botStatusUpdate, botAnalytics, botList, dashboard, updateBotConfig, homedashboard, allChats, readChats, botConfig, fetchAllBots, createNewBotPage, createNewBot, analyticsPage };
+module.exports = {updateBot , deleteBot , botStatusUpdate, botAnalytics, botList, dashboard, updateBotConfig, homedashboard, allChats, readChats, botConfig, fetchAllBots, createNewBotPage, createNewBot, analyticsPage };

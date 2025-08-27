@@ -199,7 +199,6 @@ app.get("", async (req, res) => {
 
 io.on("connection", (socket) => {
     socket.on("newUserLoaded", async (cookies) => {
-        console.log("new user loaded");
         if (cookies && cookies.user) {
             socketData[cookies.user] = socket.id
             socket.join(cookies.user);
@@ -215,18 +214,13 @@ io.on("connection", (socket) => {
 
 
     socket.on("visitor_message", async (data) => {
-        console.log(data);
-
         io.to(data.id.user).emit("update-newchat", { message: data.msg, timestamp: Date.now() });
         const chatResponse = await newChat(data);
-        console.log('updated message is emmited :)', chatResponse.message.chatID);
         chatResponse.isNewChat ? io.emit("new_visitor_message", { chatResponse }) : io.emit("incoming-message-notification", { to: chatResponse.message.chatID })
-        console.log("chat exist ?", chatResponse.isChatExist);
     });
 
     socket.on("agent-message", async (data) => {
         const socketID = socketData[data.uuid];
-        console.log("New Agent Message", data);
 
         if (socketID) {
             io.to(socketID).emit("receive-message", data.msg)
@@ -235,7 +229,6 @@ io.on("connection", (socket) => {
     })
 
     socket.on("admin-join-newroom", (data) => {
-        console.log("user joined the room ", data);
         socket.join(data)
     })
 
